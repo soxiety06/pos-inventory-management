@@ -36,7 +36,8 @@ const api = async (method, data = {}) => {
         const response = await fetch(GAS_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: method, pin: storedPin, data: data })
+            body: JSON.stringify({ action: method, pin: storedPin, data: data }),
+            redirect: 'follow'
         });
 
         const result = await response.json();
