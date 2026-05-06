@@ -9,7 +9,20 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // We leave this mostly empty because we want the POS to always fetch live data,
-  // but the file must exist for Chrome PWA requirements.
-  event.respondWith(fetch(event.request));
+  // 1. Ignore POST requests (like your API calls to Google Apps Script)
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // 2. Ignore cross-origin requests
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
+  // 3. Safely pass through local GET requests (HTML, CSS, images)
+  event.respondWith(
+    fetch(event.request).catch((err) => {
+      console.warn('Service Worker: Network request failed', err);
+    })
+  );
 });
