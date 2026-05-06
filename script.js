@@ -12,7 +12,7 @@ let currentInvRowCount = 0;
 let currentSalesRowCount = 0;
 let syncInterval; 
 
-const GAS_URL = "https://script.google.com/a/macros/google.com/s/AKfycbzrXLG7jGt3NO-QNvf8PuTC3p0t0hPVrLxMy8nnjiNjoLoeNZLBGQULL5e9iFtB6Jom/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyfQYhLEULh2zmAedHDKI0UnxvZPSLdzBKgBZXrbmqndBibLmX6OdTt3GK4hvAsSuAl/exec";
 
 document.addEventListener("DOMContentLoaded", checkSession);
 google.charts.load('current', {'packages':['corechart']});
