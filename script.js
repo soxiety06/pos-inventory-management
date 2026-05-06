@@ -1,8 +1,4 @@
-// 1. App Initialization Variables
-let currentUserRole = '';
-let currentUserName = '';
 
-// Move these up from your old code so they are only declared once!
 let inventoryData = [];
 let recentSalesData = [];
 let selectedItemRow = null; 
