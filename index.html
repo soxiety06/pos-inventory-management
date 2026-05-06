@@ -31,7 +31,7 @@
         <p style="color: var(--text-muted); margin-bottom: 25px;">Enter your 4-digit PIN to access the system.</p>
         
         <div class="input-group">
-          <input type="password" id="loginPin" placeholder="****" style="text-align: center; font-size: 2rem; letter-spacing: 8px;" maxlength="4">
+          <input type="tel" id="loginPin" placeholder="****" style="text-align: center; font-size: 2rem; letter-spacing: 8px; -webkit-text-security: disc;" maxlength="4" autocomplete="off">
         </div>
         
         <button class="btn btn-primary btn-large" style="margin-top: 15px;" onclick="handleLogin()">Login</button>
