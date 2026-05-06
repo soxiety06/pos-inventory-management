@@ -1,13 +1,15 @@
-  let inventoryData = [];
-  let recentSalesData = [];
-  let selectedItemRow = null; 
-  let posCart = [];
-  let currentUserRole = '';
-  let currentUserEmail = '';
+// 1. App Initialization Variables
+let currentUserRole = '';
+let currentUserName = '';
 
-  let currentInvRowCount = 0;
-  let currentSalesRowCount = 0;
-  let syncInterval; 
+// Move these up from your old code so they are only declared once!
+let inventoryData = [];
+let recentSalesData = [];
+let selectedItemRow = null; 
+let posCart = [];
+let currentInvRowCount = 0;
+let currentSalesRowCount = 0;
+let syncInterval;
 
   // NEW: Silent Sync Function
   function startSilentSync() {
