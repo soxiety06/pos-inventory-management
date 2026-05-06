@@ -77,10 +77,12 @@ async function handleLogin() {
 
 async function authenticatePin(pin) {
     try {
+        // FIX: Save the PIN to memory FIRST so the API wrapper can use it
+        sessionStorage.setItem('pos_pin', pin); 
+        
         const accessRes = await api('checkAccessAPI', null); 
         
         if (accessRes.status === 'approved') {
-            sessionStorage.setItem('pos_pin', pin); 
             currentUserRole = accessRes.role;
             currentUserName = accessRes.name;
             
@@ -96,13 +98,13 @@ async function authenticatePin(pin) {
             showToast(`Welcome back, ${currentUserName}!`);
         }
     } catch (e) {
+        // If Google rejects it, wipe the bad PIN from memory
         sessionStorage.removeItem('pos_pin'); 
         document.getElementById('loader-initial').classList.add('hidden');
         document.getElementById('loader-login').classList.remove('hidden');
         showToast(e.message, 'error');
     }
 }
-
 // ==========================================
 // 4. GLOBAL DATA & UTILITIES
 // ==========================================
