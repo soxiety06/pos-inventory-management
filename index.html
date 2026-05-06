@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ayen POS">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/176vdDOlCYeKEvCmOt-rAoqJ5L-8a5Xa1">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="application-name" content="Ayen POS">
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/176vdDOlCYeKEvCmOt-rAoqJ5L-8a5Xa1">
+    
+    <script>
+      // Because Google Apps Script cannot host a standalone manifest.json file,
+      // we generate it dynamically so Android devices know how to install the app.
+      const manifestJSON = {
+        "name": "Ayen Aquatics POS and Inventory",
+        "short_name": "Ayen POS",
+        "display": "standalone",
+        "orientation": "portrait",
+        "background_color": "#f1f5f9",
+        "theme_color": "#4f46e5",
+        "icons": [
+          {
+            "src": "https://lh3.googleusercontent.com/d/176vdDOlCYeKEvCmOt-rAoqJ5L-8a5Xa1",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+          },
+          {
+            "src": "https://lh3.googleusercontent.com/d/176vdDOlCYeKEvCmOt-rAoqJ5L-8a5Xa1",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+          }
+        ]
+      };
+      
+      // Inject the manifest into the DOM
+      const manifestStr = encodeURIComponent(JSON.stringify(manifestJSON));
+      document.write('<link rel="manifest" href="data:application/json;charset=utf-8,' + manifestStr + '">');
+    </script>
+
+      <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js');
+  }
+</script>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+  </head>
+  <body>
+   <div id="loader-initial" class="fish-loader">
+      <div class="swimming-fish">🐠</div>
+      <div class="water-text">Ayen Aquatics is Loading...</div>
+    </div>
+
+    <div id="loader-new-user" class="fish-loader hidden" style="background: var(--bg-color); z-index: 99999;">
+      <div class="card" style="text-align: center; max-width: 450px; width: 90%; padding: 40px 30px;">
+        <div class="swimming-fish" style="font-size: 4rem; animation-duration: 3s;">👋</div>
+        <h2 style="color: var(--primary); margin-top: 10px;">Welcome to Ayen Aquatics!</h2>
+        <p style="color: var(--text-muted); margin-bottom: 25px;">Please provide your name to request access.</p>
+        
+        <div class="input-group" style="text-align: left;">
+          <label>Full Name</label>
+          <input type="text" id="requestFullName" placeholder="e.g., Juan Dela Cruz" required>
+        </div>
+        <div class="input-group" style="text-align: left;">
+          <label>Email Address</label>
+          <input type="text" id="requestEmail" disabled style="background: #f1f5f9;">
+        </div>
+        
+        <button class="btn btn-primary btn-large" style="margin-top: 15px;" onclick="submitNewUserRequest()">Request Access</button>
+      </div>
+    </div>
+
+    <div id="loader-pending" class="fish-loader hidden">
+      <div class="swimming-fish" style="font-size: 5rem;">🐟</div>
+      <div class="water-text" style="color: #ef4444;">Access Pending</div>
+      <p style="color: var(--text-muted); margin-top: 10px;">Waiting for Admin to grant access to: <strong id="user-email-display"></strong></p>
+      <button class="btn btn-secondary" style="margin-top: 20px;" onclick="window.location.reload()">Refresh Page</button>
+    </div>
+
+    <div id="fish-loader" class="fish-loader-small hidden">
+      <div class="swimming-fish-small">🐠</div>
+    </div>
+    <div id="toast-container" class="toast-container"></div>
+
+    <div id="addModal" class="modal-overlay hidden">
+      <div class="modal-content card">
+        <h3>Add New Product</h3>
+        <form id="addProductForm" onsubmit="handleAddProduct(event)">
+          <div class="form-row">
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Item Name</label>
+                <input type="text" id="itemName" placeholder="e.g., Fish Food" required>
+            </div>
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Category</label>
+                <input type="text" id="itemCategory" placeholder="e.g., Consumables" required list="categoryList">
+                <datalist id="categoryList"></datalist>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Cost Price (₱)</label>
+                <input type="number" id="itemCost" placeholder="0.00" step="0.01" required>
+            </div>
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Selling Price (₱)</label>
+                <input type="number" id="itemPrice" placeholder="0.00" step="0.01" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Initial Stock</label>
+                <input type="number" id="itemStock" placeholder="0" required>
+            </div>
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Low Stock Alert Threshold</label>
+                <input type="number" id="itemThreshold" placeholder="0" required>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btnConfirmAdd">Confirm</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="recentSalesModal" class="modal-overlay hidden">
+      <div class="modal-content card" style="max-width: 800px; width: 95%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h3 style="margin: 0;">Today's Transactions</h3>
+          <button class="btn btn-sm btn-danger" onclick="closeRecentSalesModal()" style="border-radius: 50%; padding: 5px 10px;">X</button>
+        </div>
+        
+        <div id="recentSalesContainer" class="scrollable-table-wrapper" style="max-height: 60vh;">
+          Loading sales data...
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeRecentSalesModal()">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pos-container">
+      <header>
+        <div class="header-title">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <img src="https://lh3.googleusercontent.com/d/176vdDOlCYeKEvCmOt-rAoqJ5L-8a5Xa1" alt="Ayen Aquatics" class="app-logo">
+            <h1 style="margin: 0;">Ayen Aquatics POS and Inventory</h1>
+          </div>
+          
+          <span class="status-badge status-good" id="connection-status">🟢 Connected</span>
+        </div>
+        <nav class="tabs">
+          <button onclick="switchTab('pos')" id="tab-pos" class="active">POS Terminal</button>
+          <button onclick="switchTab('dashboard')" id="tab-dashboard">Dashboard</button>
+          <button onclick="switchTab('inventory')" id="tab-inventory">Inventory</button>
+          <button onclick="switchTab('history')" id="tab-history">History</button> 
+          <button onclick="switchTab('settings')" id="tab-settings" class="hidden">Settings</button> 
+        </nav>
+        
+      </header>
+
+      <nav class="bottom-nav" id="mobile-nav">
+        <button onclick="switchTab('pos')" id="mob-pos" class="active">
+          <span class="icon">🛒</span><span>POS</span>
+        </button>
+        <button onclick="switchTab('dashboard')" id="mob-dashboard">
+          <span class="icon">📊</span><span>Dash</span>
+        </button>
+        <button onclick="switchTab('inventory')" id="mob-inventory">
+          <span class="icon">📦</span><span>Stock</span>
+        </button>
+        <button onclick="switchTab('history')" id="mob-history">
+          <span class="icon">🕒</span><span>Hist</span>
+        </button>
+        <button onclick="switchTab('settings')" id="mob-settings" class="hidden">
+          <span class="icon">⚙️</span><span>Admin</span>
+        </button>
+      </nav>
+      
+      <main id="app-content">
+        
+      <div id="pos" class="tab-content active">
+          
+          <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+            <div>
+              <h2 style="margin-bottom: 4px;">Point of Sale</h2>
+              <p style="font-size: 0.9rem; margin: 0;">Process customer orders securely.</p>
+            </div>
+            <button class="btn btn-secondary" onclick="openRecentSalesModal()" style="display: flex; align-items: center; gap: 6px; font-weight: 600; background: white; border: 1px solid #cbd5e1; box-shadow: var(--shadow-sm);">
+              <span style="font-size: 1.1rem;">🕒</span> Recent Transactions
+            </button>
+          </div>
+          
+          <div class="pos-advanced-container">
+            
+            <div class="pos-main-pane">
+              <label style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Find Item & Add to Cart</label>
+              
+              <div class="modern-search-bar">
+                <div class="custom-dropdown-container" style="flex: 1;">
+                  <input type="text" id="posItemSearch" placeholder="Search by name or scan barcode..." onfocus="toggleDropdown(true)" onkeyup="filterPOSItems()" autocomplete="off">
+                  <div id="posDropdown" class="custom-dropdown-list hidden" style="width: calc(100% + 150px);"></div>
+                </div>
+                <input type="number" id="posQty" class="qty-input" value="1" min="1" required title="Quantity">
+                <button class="btn btn-primary" onclick="addToCart()">Add</button>
+              </div>
+
+              <div id="cartContainer" style="margin-top: 24px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; flex-grow: 1; display: flex; flex-direction: column;">
+                <div style="max-height: 400px; overflow-y: auto;">
+                  <table class="table-compact" style="margin: 0; width: 100%;">
+                    <thead style="background: #f1f5f9; position: sticky; top: 0; z-index: 5;">
+                      <tr>
+                        <th style="padding: 12px 16px;">Item</th>
+                        <th style="padding: 12px 16px; text-align: center;">Qty</th>
+                        <th style="padding: 12px 16px; text-align: right;">Subtotal</th>
+                        <th style="padding: 12px 16px; text-align: center; width: 50px;"></th>
+                      </tr>
+                    </thead>
+                    <tbody id="cartBody">
+                      <tr><td colspan="4" style="text-align:center; color: #94a3b8; padding: 40px 15px; font-style: italic;">Your cart is currently empty</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="pos-checkout-pane">
+              
+              <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 10px;">Apply Discount</label>
+                <div style="display: flex; gap: 10px;">
+                  <select id="posDiscountType" onchange="updatePOSCalculation()" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; background: #f8fafc;">
+                    <option value="None">None</option>
+                    <option value="Percentage">% Off</option>
+                    <option value="Exact">₱ Off</option>
+                  </select>
+                  <input type="number" id="posDiscountValue" placeholder="0" min="0" step="0.01" oninput="updatePOSCalculation()" disabled style="flex: 1; padding: 10px; text-align: center; font-weight: bold;">
+                </div>
+              </div>
+
+              <div class="modern-totals-box">
+                <div class="tot-row">
+                  <span>Subtotal</span>
+                  <strong>₱<span id="posSubtotal">0.00</span></strong>
+                </div>
+                <div class="tot-row" style="color: var(--danger);">
+                  <span>Discount</span>
+                  <strong>- ₱<span id="posDiscountDisplay">0.00</span></strong>
+                </div>
+                <div class="tot-row grand">
+                  <span>Total Due</span>
+                  <span>₱<span id="posTotal">0.00</span></span>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 20px;">
+                <label style="font-size: 0.85rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">Cash Tendered (₱)</label>
+                <input type="number" class="giant-amount-input" id="posPaid" placeholder="0.00" step="0.01" oninput="updatePOSCalculation()" required>
+              </div>
+
+              <div class="change-box" style="margin-bottom: 24px; text-align: center; padding: 12px; border-radius: 8px; background: #ecfdf5; border: 1px solid #a7f3d0;">
+                <span style="font-size: 0.9rem; color: #065f46; display: block; margin-bottom: 4px;">Customer Change</span>
+                <strong style="font-size: 1.8rem; color: #059669;">₱<span id="posChange">0.00</span></strong>
+              </div>
+              
+              <button onclick="processSale()" class="btn btn-success btn-large" id="btnCheckout" disabled style="padding: 20px; font-size: 1.2rem; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);">
+                Process Checkout
+              </button>
+
+            </div>
+          </div>
+        </div>
+
+        <div id="dashboard" class="tab-content">
+          <div class="section-header">
+            <h2>Analytics Dashboard</h2>
+            <p>Real-time system overview and financial reporting</p>
+          </div>
+          
+          <div class="kpi-grid" id="kpi-container">Loading metrics...</div>
+          
+          <div class="card" style="margin-top: 20px;">
+            <h3>Financial Summary Report</h3>
+            <div class="table-container">
+              <table class="table-compact" style="width: 100%;">
+                <thead>
+                  <tr>
+                    <th>Period</th>
+                    <th>Total Sales (Revenue)</th>
+                    <th>Total Cost (COGS)</th>
+                    <th>Net Profit</th>
+                    <th>Profit Margin</th>
+                  </tr>
+                </thead>
+                <tbody id="financialReportBody">
+                  </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div class="chart-grid">
+            <div class="card chart-container">
+              <h3>Revenue Trends (Last 7 Days)</h3>
+              <div id="chart_trends" style="width: 100%; height: 300px;"></div>
+            </div>
+            <div class="card chart-container">
+              <h3>Inventory by Category</h3>
+              <div id="chart_category" style="width: 100%; height: 300px;"></div>
+            </div>
+          </div>
+        </div>
+
+       <div id="inventory" class="tab-content">
+          <div class="section-header">
+            <h2>Inventory Management</h2>
+          </div>
+
+          <div class="kpi-grid" style="margin-bottom: 20px;">
+            <div class="kpi-card">
+              <div class="kpi-title">Total Items in Stock</div>
+              <div class="kpi-value" id="invTotalItems">0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Total Cost Value</div>
+              <div class="kpi-value" style="color: var(--danger)" id="invTotalCost">₱0.00</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Total Retail Value</div>
+              <div class="kpi-value" style="color: var(--success)" id="invTotalRetail">₱0.00</div>
+            </div>
+          </div>
+
+          <div class="card table-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+              <h3 style="margin: 0;">Current Inventory</h3>
+              
+              <div style="display: flex; gap: 10px; align-items: center; flex: 1; justify-content: flex-end;">
+                <input type="text" id="inventorySearch" placeholder="Search by ID, Name, or Category..." onkeyup="filterInventoryTable()" style="max-width: 300px; padding: 10px; margin: 0;">
+                <button class="btn btn-primary" onclick="openAddModal()" style="white-space: nowrap;">+ Add Product</button>
+              </div>
+            </div>
+            
+            <div id="inventoryTableContainer" class="scrollable-table-wrapper"></div>
+          </div>
+        </div>
+
+        <div id="history" class="tab-content">
+          <div class="section-header">
+            <h2>Transaction History</h2>
+            <p>Complete audit log arranged by Year > Month > Day</p>
+          </div>
+          <div class="card">
+            <div id="historyTableContainer">
+              </div>
+          </div>
+        </div>
+          <div id="settings" class="tab-content">
+          <div class="section-header">
+            <h2>Admin Settings</h2>
+            <p>Manage user access and permissions</p>
+          </div>
+          
+          <div class="pos-layout-grid">
+            <div class="card">
+              <h3>Pending Access Requests</h3>
+              <div id="pendingRequestsContainer"></div>
+            </div>
+            <div class="card">
+              <h3>Authorized Users</h3>
+              <div id="authorizedUsersContainer"></div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+    <script src="script.js" defer></script>
+  </body>
+</html>
