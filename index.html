@@ -1,91 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <base target="_top">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Ayen POS">
-    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/176vdDOlCYeKEvCmOt-rAoqJ5L-8a5Xa1">
-
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#4f46e5">
     <meta name="application-name" content="Ayen POS">
-    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/176vdDOlCYeKEvCmOt-rAoqJ5L-8a5Xa1">
     
-    <script>
-      // Because Google Apps Script cannot host a standalone manifest.json file,
-      // we generate it dynamically so Android devices know how to install the app.
-      const manifestJSON = {
-        "name": "Ayen Aquatics POS and Inventory",
-        "short_name": "Ayen POS",
-        "display": "standalone",
-        "orientation": "portrait",
-        "background_color": "#f1f5f9",
-        "theme_color": "#4f46e5",
-        "icons": [
-          {
-            "src": "https://lh3.googleusercontent.com/d/176vdDOlCYeKEvCmOt-rAoqJ5L-8a5Xa1",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "any maskable"
-          },
-          {
-            "src": "https://lh3.googleusercontent.com/d/176vdDOlCYeKEvCmOt-rAoqJ5L-8a5Xa1",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "any maskable"
-          }
-        ]
-      };
-      
-      // Inject the manifest into the DOM
-      const manifestStr = encodeURIComponent(JSON.stringify(manifestJSON));
-      document.write('<link rel="manifest" href="data:application/json;charset=utf-8,' + manifestStr + '">');
-    </script>
-
-      <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js');
-  }
-</script>
-
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="stylesheet" href="style.css">
+    
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
   <body>
-   <div id="loader-initial" class="fish-loader">
+    <div id="loader-initial" class="fish-loader">
       <div class="swimming-fish">🐠</div>
       <div class="water-text">Ayen Aquatics is Loading...</div>
     </div>
 
-    <div id="loader-new-user" class="fish-loader hidden" style="background: var(--bg-color); z-index: 99999;">
-      <div class="card" style="text-align: center; max-width: 450px; width: 90%; padding: 40px 30px;">
-        <div class="swimming-fish" style="font-size: 4rem; animation-duration: 3s;">👋</div>
-        <h2 style="color: var(--primary); margin-top: 10px;">Welcome to Ayen Aquatics!</h2>
-        <p style="color: var(--text-muted); margin-bottom: 25px;">Please provide your name to request access.</p>
+    <div id="loader-login" class="fish-loader hidden" style="background: var(--bg-color); z-index: 99999;">
+      <div class="card" style="text-align: center; max-width: 400px; width: 90%; padding: 40px 30px;">
+        <div class="swimming-fish" style="font-size: 4rem; animation-duration: 3s;">🔒</div>
+        <h2 style="color: var(--primary); margin-top: 10px;">Ayen Aquatics POS</h2>
+        <p style="color: var(--text-muted); margin-bottom: 25px;">Enter your 4-digit PIN to access the system.</p>
         
-        <div class="input-group" style="text-align: left;">
-          <label>Full Name</label>
-          <input type="text" id="requestFullName" placeholder="e.g., Juan Dela Cruz" required>
-        </div>
-        <div class="input-group" style="text-align: left;">
-          <label>Email Address</label>
-          <input type="text" id="requestEmail" disabled style="background: #f1f5f9;">
+        <div class="input-group">
+          <input type="password" id="loginPin" placeholder="****" style="text-align: center; font-size: 2rem; letter-spacing: 8px;" maxlength="4">
         </div>
         
-        <button class="btn btn-primary btn-large" style="margin-top: 15px;" onclick="submitNewUserRequest()">Request Access</button>
+        <button class="btn btn-primary btn-large" style="margin-top: 15px;" onclick="handleLogin()">Login</button>
       </div>
-    </div>
-
-    <div id="loader-pending" class="fish-loader hidden">
-      <div class="swimming-fish" style="font-size: 5rem;">🐟</div>
-      <div class="water-text" style="color: #ef4444;">Access Pending</div>
-      <p style="color: var(--text-muted); margin-top: 10px;">Waiting for Admin to grant access to: <strong id="user-email-display"></strong></p>
-      <button class="btn btn-secondary" style="margin-top: 20px;" onclick="window.location.reload()">Refresh Page</button>
     </div>
 
     <div id="fish-loader" class="fish-loader-small hidden">
@@ -136,6 +86,49 @@
       </div>
     </div>
 
+    <div id="editModal" class="modal-overlay hidden">
+      <div class="modal-content card">
+        <h3>Edit Product</h3>
+        <form id="editProductForm" onsubmit="submitEditProduct(event)">
+          <input type="hidden" id="editItemId">
+          <div class="form-row">
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Item Name</label>
+                <input type="text" id="editItemName" required>
+            </div>
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Category</label>
+                <input type="text" id="editItemCategory" required list="categoryList">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Cost Price (₱)</label>
+                <input type="number" id="editItemCost" step="0.01" required>
+            </div>
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Selling Price (₱)</label>
+                <input type="number" id="editItemPrice" step="0.01" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Stock</label>
+                <input type="number" id="editItemStock" required>
+            </div>
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Threshold</label>
+                <input type="number" id="editItemThreshold" required>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btnSaveEdit">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div id="recentSalesModal" class="modal-overlay hidden">
       <div class="modal-content card" style="max-width: 800px; width: 95%;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -157,10 +150,9 @@
       <header>
         <div class="header-title">
           <div style="display: flex; align-items: center; gap: 12px;">
-            <img src="https://lh3.googleusercontent.com/d/176vdDOlCYeKEvCmOt-rAoqJ5L-8a5Xa1" alt="Ayen Aquatics" class="app-logo">
+            <img src="icon-192.png" alt="Ayen Aquatics" class="app-logo">
             <h1 style="margin: 0;">Ayen Aquatics POS and Inventory</h1>
           </div>
-          
           <span class="status-badge status-good" id="connection-status">🟢 Connected</span>
         </div>
         <nav class="tabs">
@@ -170,7 +162,6 @@
           <button onclick="switchTab('history')" id="tab-history">History</button> 
           <button onclick="switchTab('settings')" id="tab-settings" class="hidden">Settings</button> 
         </nav>
-        
       </header>
 
       <nav class="bottom-nav" id="mobile-nav">
@@ -194,7 +185,6 @@
       <main id="app-content">
         
       <div id="pos" class="tab-content active">
-          
           <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
             <div>
               <h2 style="margin-bottom: 4px;">Point of Sale</h2>
@@ -239,7 +229,6 @@
             </div>
 
             <div class="pos-checkout-pane">
-              
               <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
                 <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 10px;">Apply Discount</label>
                 <div style="display: flex; gap: 10px;">
@@ -280,7 +269,6 @@
               <button onclick="processSale()" class="btn btn-success btn-large" id="btnCheckout" disabled style="padding: 20px; font-size: 1.2rem; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);">
                 Process Checkout
               </button>
-
             </div>
           </div>
         </div>
@@ -329,6 +317,29 @@
             <h2>Inventory Management</h2>
           </div>
 
+          <div class="target-dashboard-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h3>🎯 Monthly Target Sales Goal</h3>
+              <button onclick="setTargetSalesGoal()" class="btn-sm" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 6px;">Edit Goal</button>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px;">
+              <div>
+                <span style="font-size: 0.9rem; opacity: 0.8; display: block;">Current Sales</span>
+                <strong style="font-size: 1.8rem;" id="uiCurrentSales">₱0.00</strong>
+              </div>
+              <div style="text-align: right;">
+                <span style="font-size: 0.9rem; opacity: 0.8; display: block;">Target Goal</span>
+                <strong style="font-size: 1.2rem;" id="uiTargetGoal">₱0.00</strong>
+              </div>
+            </div>
+            
+            <div class="target-progress-bg">
+              <div class="target-progress-fill" id="uiProgressBar"></div>
+            </div>
+            <div style="text-align: center; margin-top: 8px; font-size: 0.85rem; opacity: 0.9;" id="uiProgressText">0% Achieved</div>
+          </div>
+
           <div class="kpi-grid" style="margin-bottom: 20px;">
             <div class="kpi-card">
               <div class="kpi-title">Total Items in Stock</div>
@@ -368,7 +379,8 @@
               </div>
           </div>
         </div>
-          <div id="settings" class="tab-content">
+
+        <div id="settings" class="tab-content">
           <div class="section-header">
             <h2>Admin Settings</h2>
             <p>Manage user access and permissions</p>
@@ -388,6 +400,7 @@
 
       </main>
     </div>
+    
     <script src="script.js" defer></script>
   </body>
 </html>
