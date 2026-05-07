@@ -1,9 +1,7 @@
 // ==========================================
 // 1. APP INITIALIZATION & VARIABLES
 // ==========================================
-let currentUserRole = '';
 let currentUserName = '';
-
 let inventoryData = [];
 let recentSalesData = [];
 let selectedItemRow = null; 
@@ -12,98 +10,141 @@ let currentInvRowCount = 0;
 let currentSalesRowCount = 0;
 let syncInterval; 
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyfQYhLEULh2zmAedHDKI0UnxvZPSLdzBKgBZXrbmqndBibLmX6OdTt3GK4hvAsSuAl/exec";
+const GAS_URL = "YOUR_NEW_WEB_APP_URL_HERE"; // Update this after deployment
 
 document.addEventListener("DOMContentLoaded", checkSession);
 google.charts.load('current', {'packages':['corechart']});
 
-// ==========================================
-// 2. SERVICE WORKER & FETCH API WRAPPER
-// ==========================================
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(err => console.error("Service Worker registration failed:", err));
+    navigator.serviceWorker.register('./sw.js').catch(err => console.error("SW failed:", err));
 }
 
+// ==========================================
+// 2. FETCH API WRAPPER
+// ==========================================
 const api = async (method, data = {}) => {
-    if (method !== 'checkAccessAPI' && method !== 'checkDataSyncAPI' && method !== 'getStartupDataAPI') {
+    if (method !== 'loginAPI' && method !== 'registerUserAPI' && method !== 'checkDataSyncAPI' && method !== 'getStartupDataAPI') {
         document.getElementById('fish-loader').classList.remove('hidden');
     }
 
-    // Grab the stored PIN to prove identity to the backend
-    const storedPin = sessionStorage.getItem('pos_pin') || "";
+    const storedEmail = sessionStorage.getItem('pos_email') || "";
+    const storedPass = sessionStorage.getItem('pos_pass') || "";
 
     try {
         const response = await fetch(GAS_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: method, pin: storedPin, data: data }),
+            body: JSON.stringify({ action: method, email: storedEmail, password: storedPass, data: data }),
             redirect: 'follow'
         });
 
         const result = await response.json();
         document.getElementById('fish-loader').classList.add('hidden');
         
+        if (result.message === 'TRIAL_EXPIRED') {
+            triggerTrialExpired();
+            throw new Error('Trial Expired');
+        }
+        
         if (result.status === 'error') throw new Error(result.message);
         return result;
 
     } catch (error) {
         document.getElementById('fish-loader').classList.add('hidden');
-        throw error;
+        if(error.message !== 'Trial Expired') throw error;
     }
 };
 
 // ==========================================
-// 3. AUTHENTICATION & LOGIN
+// 3. AUTHENTICATION & TRIAL LOGIC
 // ==========================================
+function toggleAuthMode(mode) {
+    if (mode === 'register') {
+        document.getElementById('loader-login').classList.add('hidden');
+        document.getElementById('loader-register').classList.remove('hidden');
+    } else {
+        document.getElementById('loader-register').classList.add('hidden');
+        document.getElementById('loader-login').classList.remove('hidden');
+    }
+}
+
 async function checkSession() {
-    const pin = sessionStorage.getItem('pos_pin');
-    if (!pin) {
+    const email = sessionStorage.getItem('pos_email');
+    const pass = sessionStorage.getItem('pos_pass');
+    
+    if (!email || !pass) {
         document.getElementById('loader-initial').classList.add('hidden');
         document.getElementById('loader-login').classList.remove('hidden');
         return;
     }
-    await authenticatePin(pin);
+    await authenticate(email, pass);
+}
+
+async function handleRegister() {
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const pass = document.getElementById('regPassword').value;
+    
+    if (!name || !email || !pass) return showToast('Please fill all fields', 'error');
+
+    document.getElementById('loader-register').classList.add('hidden');
+    document.getElementById('loader-initial').classList.remove('hidden');
+    
+    try {
+        await api('registerUserAPI', { email: email, name: name, password: pass });
+        showToast('Registration successful! Logging you in...', 'success');
+        await authenticate(email, pass);
+    } catch(e) {
+        document.getElementById('loader-initial').classList.add('hidden');
+        document.getElementById('loader-register').classList.remove('hidden');
+        showToast(e.message, 'error');
+    }
 }
 
 async function handleLogin() {
-    const pin = document.getElementById('loginPin').value;
-    if (pin.length < 4) return showToast('Please enter a valid PIN', 'error');
+    const email = document.getElementById('loginEmail').value;
+    const pass = document.getElementById('loginPassword').value;
+    if (!email || !pass) return showToast('Please enter email and password', 'error');
     
     document.getElementById('loader-login').classList.add('hidden');
     document.getElementById('loader-initial').classList.remove('hidden');
     
-    await authenticatePin(pin);
+    await authenticate(email, pass);
 }
 
-async function authenticatePin(pin) {
+async function authenticate(email, pass) {
     try {
-        // FIX: Save the PIN to memory FIRST so the API wrapper can use it
-        sessionStorage.setItem('pos_pin', pin); 
+        const accessRes = await api('loginAPI', null); 
         
-        const accessRes = await api('checkAccessAPI', null); 
-        
-        if (accessRes.status === 'approved') {
-            currentUserRole = accessRes.role;
+        if (accessRes.status === 'success') {
+            sessionStorage.setItem('pos_email', email); 
+            sessionStorage.setItem('pos_pass', pass); 
             currentUserName = accessRes.name;
-            
-            if (currentUserRole === 'Admin') {
-                document.getElementById('tab-settings').classList.remove('hidden');
-                document.getElementById('mob-settings').classList.remove('hidden');
-                loadAdminData();
-            }
 
             await loadGlobalData();
             document.getElementById('loader-initial').classList.add('hidden');
             startSilentSync();
-            showToast(`Welcome back, ${currentUserName}!`);
+            showToast(`Welcome, ${currentUserName}!`);
         }
     } catch (e) {
-        // If Google rejects it, wipe the bad PIN from memory
-        sessionStorage.removeItem('pos_pin'); 
-        document.getElementById('loader-initial').classList.add('hidden');
-        document.getElementById('loader-login').classList.remove('hidden');
-        showToast(e.message, 'error');
+        if(e.message !== 'Trial Expired') {
+            logout();
+            showToast(e.message, 'error');
+        }
     }
+}
+
+function triggerTrialExpired() {
+    document.getElementById('loader-initial').classList.add('hidden');
+    document.getElementById('loader-login').classList.add('hidden');
+    document.getElementById('loader-register').classList.add('hidden');
+    document.getElementById('loader-expired').classList.remove('hidden');
+}
+
+function logout() {
+    sessionStorage.removeItem('pos_email'); 
+    sessionStorage.removeItem('pos_pass'); 
+    window.location.reload();
 }
 // ==========================================
 // 4. GLOBAL DATA & UTILITIES
