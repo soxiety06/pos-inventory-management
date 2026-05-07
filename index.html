@@ -32,8 +32,8 @@
         <p style="color: var(--text-muted); margin-bottom: 25px;">Please log in to continue.</p>
         
         <div class="input-group" style="text-align: left;">
-          <label>Email Address</label>
-          <input type="email" id="loginEmail" placeholder="e.g. name@gmail.com" required>
+          <label>Username</label>
+          <input type="text" id="loginUsername" placeholder="Enter your username" required>
         </div>
         <div class="input-group" style="text-align: left; margin-bottom: 20px;">
           <label>Password</label>
@@ -57,8 +57,8 @@
           <input type="text" id="regName" placeholder="Juan Dela Cruz" required>
         </div>
         <div class="input-group" style="text-align: left;">
-          <label>Email Address</label>
-          <input type="email" id="regEmail" placeholder="e.g. name@gmail.com" required>
+          <label>Username</label>
+          <input type="text" id="regUsername" placeholder="Choose a username" required>
         </div>
         <div class="input-group" style="text-align: left; margin-bottom: 20px;">
           <label>Create Password</label>
@@ -191,7 +191,10 @@
             <img src="icon-192.png" alt="POS Logo" class="app-logo">
             <h1 style="margin: 0;">POS and Inventory Management Tool</h1>
           </div>
-          <span class="status-badge status-good" id="connection-status">🟢 Connected</span>
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <span class="status-badge status-good" id="connection-status">🟢 Connected</span>
+            <button class="btn btn-sm btn-danger" onclick="logout()">Logout</button>
+          </div>
         </div>
         <nav class="tabs">
           <button onclick="switchTab('pos')" id="tab-pos" class="active">POS Terminal</button>
