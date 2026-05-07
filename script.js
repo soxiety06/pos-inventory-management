@@ -114,11 +114,13 @@ async function handleLogin() {
 
 async function authenticate(email, pass) {
     try {
+        // FIX 1: Save credentials to memory FIRST so the API wrapper can send them
+        sessionStorage.setItem('pos_email', email); 
+        sessionStorage.setItem('pos_pass', pass); 
+
         const accessRes = await api('loginAPI', null); 
         
         if (accessRes.status === 'success') {
-            sessionStorage.setItem('pos_email', email); 
-            sessionStorage.setItem('pos_pass', pass); 
             currentUserName = accessRes.name;
 
             await loadGlobalData();
@@ -127,8 +129,13 @@ async function authenticate(email, pass) {
             showToast(`Welcome, ${currentUserName}!`);
         }
     } catch (e) {
+        // FIX 2: If Google rejects the login, wipe the bad credentials and show the error WITHOUT reloading the page
+        sessionStorage.removeItem('pos_email'); 
+        sessionStorage.removeItem('pos_pass'); 
+        
         if(e.message !== 'Trial Expired') {
-            logout();
+            document.getElementById('loader-initial').classList.add('hidden');
+            document.getElementById('loader-login').classList.remove('hidden');
             showToast(e.message, 'error');
         }
     }
