@@ -415,23 +415,29 @@ function populateDropdowns() {
       if (parseInt(row[5]) > 0) groupedData[category].push(row);
     });
 
-    list.innerHTML = '';
-    for (const cat in groupedData) {
-      if (groupedData[cat].length === 0) continue; 
-      let header = document.createElement('div');
-      header.className = 'dropdown-header';
-      header.innerText = cat;
-      list.appendChild(header);
+    if (list) {
+        list.innerHTML = '';
+        for (const cat in groupedData) {
+          if (groupedData[cat].length === 0) continue; 
+          let header = document.createElement('div');
+          header.className = 'dropdown-header';
+          header.innerText = cat;
+          list.appendChild(header);
 
-      groupedData[cat].forEach(row => {
-        let div = document.createElement('div');
-        div.className = 'dropdown-item';
-        div.innerHTML = `<span><strong>${row[1]}</strong> - ₱${parseFloat(row[4]).toFixed(2)}</span> <span class="stock-badge">Stock: ${row[5]}</span>`;
-        div.onclick = () => selectPOSItem(row[0], row[1]);
-        list.appendChild(div);
-      });
+          groupedData[cat].forEach(row => {
+            let div = document.createElement('div');
+            div.className = 'dropdown-item';
+            div.innerHTML = `<span><strong>${row[1]}</strong> - ₱${parseFloat(row[4]).toFixed(2)}</span> <span class="stock-badge">Stock: ${row[5]}</span>`;
+            div.onclick = () => selectPOSItem(row[0], row[1]);
+            list.appendChild(div);
+          });
+        }
     }
-    catList.innerHTML = Array.from(categories).map(c => `<option value="${c}">`).join('');
+    
+    // Safety check prevents the silent crash
+    if (catList) {
+        catList.innerHTML = Array.from(categories).map(c => `<option value="${c}">`).join('');
+    }
 }
 
 function toggleDropdown(show) {
