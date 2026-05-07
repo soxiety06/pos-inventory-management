@@ -18,61 +18,58 @@ if ('serviceWorker' in navigator) {
 }
 
 // ==========================================
-// 2. NATIVE GAS API WRAPPER (PROMISE-BASED)
+// 2. FETCH API WRAPPER (HEADLESS REST API)
 // ==========================================
-const api = (method, data = {}) => {
-    return new Promise((resolve, reject) => {
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwGXsZl_YAd0rDSNVli3dTw-t1t16xOrKfrezrjca2QUPapSuiuGAZnNbu2BHpc8-kx/exec"; // You must paste your new deployment URL here
+
+const api = async (method, data = {}) => {
+    // 1. Show Loader
+    if (method !== 'loginAPI' && method !== 'registerUserAPI' && method !== 'checkDataSyncAPI' && method !== 'getStartupDataAPI') {
+        let loader = document.getElementById('loader-initial');
+        if (loader) loader.classList.remove('hidden');
+    }
+
+    const storedEmail = sessionStorage.getItem('pos_email') || "";
+    const storedPass = sessionStorage.getItem('pos_pass') || "";
+
+    try {
+        const response = await fetch(GAS_URL, {
+            method: 'POST',
+            // CRITICAL: Must be text/plain to prevent CORS preflight failures
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: method, email: storedEmail, password: storedPass, data: data }),
+            redirect: 'follow' // CRITICAL: Must follow Google's 302 redirect
+        });
+
+        const textResponse = await response.text(); 
+        let result;
         
-        // 1. Trigger Loaders
-        if (method !== 'loginAPI' && method !== 'registerUserAPI' && method !== 'checkDataSyncAPI' && method !== 'getStartupDataAPI') {
-            let loader = document.getElementById('loader-initial');
-            if (loader) loader.classList.remove('hidden');
+        try {
+            // If this fails, it means Google returned an HTML error page instead of your JSON
+            result = JSON.parse(textResponse);
+        } catch (e) {
+            console.error("Server returned HTML instead of JSON:", textResponse);
+            throw new Error("API Connection Blocked: Check GAS Deployment settings (Execute as Me, Access Anyone).");
         }
 
-        // 2. Fetch Session Data
-        const storedEmail = sessionStorage.getItem('pos_email') || "";
-        const storedPass = sessionStorage.getItem('pos_pass') || "";
+        // 2. Hide Loader
+        let loader = document.getElementById('loader-initial');
+        if (loader) loader.classList.add('hidden');
+        
+        if (result.message === 'TRIAL_EXPIRED') {
+            triggerTrialExpired();
+            throw new Error('Trial Expired');
+        }
+        
+        if (result.status === 'error') throw new Error(result.message);
+        return result;
 
-        // 3. Construct Payload
-        const payload = {
-            action: method,
-            email: storedEmail,
-            password: storedPass,
-            data: data
-        };
-
-        // 4. Execute Native Client-Server RPC
-        google.script.run
-            .withSuccessHandler((resultString) => {
-                let loader = document.getElementById('loader-initial');
-                if (loader) loader.classList.add('hidden');
-
-                try {
-                    const result = JSON.parse(resultString);
-                    
-                    if (result.message === 'TRIAL_EXPIRED') {
-                        triggerTrialExpired();
-                        reject(new Error('Trial Expired'));
-                        return;
-                    }
-                    
-                    if (result.status === 'error') {
-                        reject(new Error(result.message));
-                        return;
-                    }
-                    
-                    resolve(result);
-                } catch (e) {
-                    reject(new Error("Failed to parse server response."));
-                }
-            })
-            .withFailureHandler((error) => {
-                let loader = document.getElementById('loader-initial');
-                if (loader) loader.classList.add('hidden');
-                reject(error);
-            })
-            .handleBackendRequest(JSON.stringify(payload));
-    });
+    } catch (error) {
+        let loader = document.getElementById('loader-initial');
+        if (loader) loader.classList.add('hidden');
+        
+        if(error.message !== 'Trial Expired') throw error;
+    }
 };
 // ==========================================
 // 3. AUTHENTICATION & TRIAL LOGIC
