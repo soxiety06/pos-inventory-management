@@ -10,7 +10,7 @@ let currentInvRowCount = 0;
 let currentSalesRowCount = 0;
 let syncInterval; 
 
-const GAS_URL = "YOUR_NEW_WEB_APP_URL_HERE"; // Remember to update this!
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwGXsZl_YAd0rDSNVli3dTw-t1t16xOrKfrezrjca2QUPapSuiuGAZnNbu2BHpc8-kx/exec"; // Remember to update this!
 
 document.addEventListener("DOMContentLoaded", checkSession);
 google.charts.load('current', {'packages':['corechart']});
