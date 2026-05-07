@@ -33,12 +33,14 @@ const api = async (method, data = {}) => {
     const storedPass = sessionStorage.getItem('pos_pass') || "";
 
     try {
-        const response = await fetch(GAS_URL, {
+        // We add a timestamp query parameter (?t=...) to force bypass browser cache
+        const cacheBusterUrl = GAS_URL + "?t=" + new Date().getTime();
+        
+        const response = await fetch(cacheBusterUrl, {
             method: 'POST',
-            // CRITICAL: Must be text/plain to prevent CORS preflight failures
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: method, email: storedEmail, password: storedPass, data: data }),
-            redirect: 'follow' // CRITICAL: Must follow Google's 302 redirect
+            redirect: 'follow'
         });
 
         const textResponse = await response.text(); 
