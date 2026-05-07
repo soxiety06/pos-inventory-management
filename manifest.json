@@ -1,6 +1,6 @@
 {
-  "name": "Ayen Aquatics POS",
-  "short_name": "Ayen POS",
+  "name": "POS and Inventory Management Tool",
+  "short_name": "POS System",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f1f5f9",
