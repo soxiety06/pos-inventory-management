@@ -197,7 +197,8 @@ async function loadGlobalData() {
         renderDashboard();
         renderRecentSales(); 
         renderHistoryTable(); 
-        updateTargetSalesDashboard(); 
+        
+        // REMOVED: updateTargetSalesDashboard(); <--- Delete this line
         
       } else {
         throw new Error(response.message);
@@ -750,47 +751,6 @@ function renderDashboard() {
       var chartBar = new google.visualization.ColumnChart(document.getElementById('chart_trends'));
       chartBar.draw(dataBar, optionsBar);
     }
-}
-
-function setTargetSalesGoal() {
-    let currentGoal = localStorage.getItem('ayenTargetSales') || 50000;
-    let newGoal = prompt("Enter your Target Sales Goal for this month (₱):", currentGoal);
-    
-    if (newGoal !== null && !isNaN(newGoal) && newGoal.trim() !== "") {
-      localStorage.setItem('ayenTargetSales', parseFloat(newGoal));
-      updateTargetSalesDashboard();
-      showToast("Target Sales Goal Updated!", "success");
-    }
-}
-
-function updateTargetSalesDashboard() {
-    let monthlySales = 0;
-    let today = new Date();
-    
-    recentSalesData.forEach(row => {
-      if (row[9] === 'Voided') return; 
-      
-      let dateObj = new Date(row[1]);
-      if (dateObj.getMonth() === today.getMonth() && dateObj.getFullYear() === today.getFullYear()) {
-        monthlySales += parseFloat(row[5]) || 0; 
-      }
-    });
-
-    let targetGoal = parseFloat(localStorage.getItem('ayenTargetSales')) || 50000;
-    let progressPct = (monthlySales / targetGoal) * 100;
-    if (progressPct > 100) progressPct = 100; 
-
-    const formatMoney = (val) => '₱' + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    
-    let elCurrent = document.getElementById('uiCurrentSales');
-    let elTarget = document.getElementById('uiTargetGoal');
-    let elBar = document.getElementById('uiProgressBar');
-    let elText = document.getElementById('uiProgressText');
-
-    if (elCurrent) elCurrent.innerText = formatMoney(monthlySales);
-    if (elTarget) elTarget.innerText = formatMoney(targetGoal);
-    if (elBar) elBar.style.width = progressPct + '%';
-    if (elText) elText.innerText = progressPct.toFixed(1) + '% Achieved';
 }
 
 // ==========================================
