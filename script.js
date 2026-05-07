@@ -29,7 +29,7 @@ const api = async (method, data = {}) => {
         if (loader) loader.classList.remove('hidden');
     }
 
-    const storedEmail = sessionStorage.getItem('pos_email') || "";
+    const storedEmail = sessionStorage.getItem('pos_username') || "";
     const storedPass = sessionStorage.getItem('pos_pass') || "";
 
     try {
@@ -87,31 +87,31 @@ function toggleAuthMode(mode) {
 }
 
 async function checkSession() {
-    const email = sessionStorage.getItem('pos_email');
+    const username = sessionStorage.getItem('pos_username');
     const pass = sessionStorage.getItem('pos_pass');
     
-    if (!email || !pass) {
+    if (!username || !pass) {
         document.getElementById('loader-initial').classList.add('hidden');
         document.getElementById('loader-login').classList.remove('hidden');
         return;
     }
-    await authenticate(email, pass);
+    await authenticate(username, pass);
 }
 
 async function handleRegister() {
     const name = document.getElementById('regName').value;
-    const email = document.getElementById('regEmail').value;
+    const username = document.getElementById('regUsername').value;
     const pass = document.getElementById('regPassword').value;
     
-    if (!name || !email || !pass) return showToast('Please fill all fields', 'error');
+    if (!name || !username || !pass) return showToast('Please fill all fields', 'error');
 
     document.getElementById('loader-register').classList.add('hidden');
     document.getElementById('loader-initial').classList.remove('hidden');
     
     try {
-        await api('registerUserAPI', { email: email, name: name, password: pass });
+        await api('registerUserAPI', { username: username, name: name, password: pass });
         showToast('Registration successful! Logging you in...', 'success');
-        await authenticate(email, pass);
+        await authenticate(username, pass);
     } catch(e) {
         document.getElementById('loader-initial').classList.add('hidden');
         document.getElementById('loader-register').classList.remove('hidden');
@@ -120,19 +120,19 @@ async function handleRegister() {
 }
 
 async function handleLogin() {
-    const email = document.getElementById('loginEmail').value;
+    const username = document.getElementById('loginUsername').value;
     const pass = document.getElementById('loginPassword').value;
-    if (!email || !pass) return showToast('Please enter email and password', 'error');
+    if (!username || !pass) return showToast('Please enter username and password', 'error');
     
     document.getElementById('loader-login').classList.add('hidden');
     document.getElementById('loader-initial').classList.remove('hidden');
     
-    await authenticate(email, pass);
+    await authenticate(username, pass);
 }
 
-async function authenticate(email, pass) {
+async function authenticate(username, pass) {
     try {
-        sessionStorage.setItem('pos_email', email); 
+        sessionStorage.setItem('pos_username', username); 
         sessionStorage.setItem('pos_pass', pass); 
 
         const accessRes = await api('loginAPI', null); 
@@ -145,7 +145,7 @@ async function authenticate(email, pass) {
             showToast(`Welcome, ${currentUserName}!`);
         }
     } catch (e) {
-        sessionStorage.removeItem('pos_email'); 
+        sessionStorage.removeItem('pos_username'); 
         sessionStorage.removeItem('pos_pass'); 
         
         if(e.message !== 'Trial Expired') {
@@ -156,15 +156,9 @@ async function authenticate(email, pass) {
     }
 }
 
-function triggerTrialExpired() {
-    document.getElementById('loader-initial').classList.add('hidden');
-    document.getElementById('loader-login').classList.add('hidden');
-    document.getElementById('loader-register').classList.add('hidden');
-    document.getElementById('loader-expired').classList.remove('hidden');
-}
-
 function logout() {
-    sessionStorage.removeItem('pos_email'); 
+    // Wipes the session and forces the page to reload, kicking the user back to the login screen
+    sessionStorage.removeItem('pos_username'); 
     sessionStorage.removeItem('pos_pass'); 
     window.location.reload();
 }
