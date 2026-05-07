@@ -20,49 +20,62 @@ if ('serviceWorker' in navigator) {
 }
 
 // ==========================================
-// 2. FETCH API WRAPPER
+// 2. NATIVE GAS API WRAPPER (PROMISE-BASED)
 // ==========================================
-const api = async (method, data = {}) => {
-    // FIX: Changed 'fish-loader' to 'loader-initial' to match the HTML ID
-    if (method !== 'loginAPI' && method !== 'registerUserAPI' && method !== 'checkDataSyncAPI' && method !== 'getStartupDataAPI') {
-        let loader = document.getElementById('loader-initial');
-        if (loader) loader.classList.remove('hidden');
-    }
-
-    const storedEmail = sessionStorage.getItem('pos_email') || "";
-    const storedPass = sessionStorage.getItem('pos_pass') || "";
-
-    try {
-        const response = await fetch(GAS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: method, email: storedEmail, password: storedPass, data: data }),
-            redirect: 'follow'
-        });
-
-        const result = await response.json();
+const api = (method, data = {}) => {
+    return new Promise((resolve, reject) => {
         
-        // FIX: Changed 'fish-loader' to 'loader-initial'
-        let loader = document.getElementById('loader-initial');
-        if (loader) loader.classList.add('hidden');
-        
-        if (result.message === 'TRIAL_EXPIRED') {
-            triggerTrialExpired();
-            throw new Error('Trial Expired');
+        // 1. Trigger Loaders
+        if (method !== 'loginAPI' && method !== 'registerUserAPI' && method !== 'checkDataSyncAPI' && method !== 'getStartupDataAPI') {
+            let loader = document.getElementById('loader-initial');
+            if (loader) loader.classList.remove('hidden');
         }
-        
-        if (result.status === 'error') throw new Error(result.message);
-        return result;
 
-    } catch (error) {
-        // FIX: Changed 'fish-loader' to 'loader-initial'
-        let loader = document.getElementById('loader-initial');
-        if (loader) loader.classList.add('hidden');
-        
-        if(error.message !== 'Trial Expired') throw error;
-    }
+        // 2. Fetch Session Data
+        const storedEmail = sessionStorage.getItem('pos_email') || "";
+        const storedPass = sessionStorage.getItem('pos_pass') || "";
+
+        // 3. Construct Payload
+        const payload = {
+            action: method,
+            email: storedEmail,
+            password: storedPass,
+            data: data
+        };
+
+        // 4. Execute Native Client-Server RPC
+        google.script.run
+            .withSuccessHandler((resultString) => {
+                let loader = document.getElementById('loader-initial');
+                if (loader) loader.classList.add('hidden');
+
+                try {
+                    const result = JSON.parse(resultString);
+                    
+                    if (result.message === 'TRIAL_EXPIRED') {
+                        triggerTrialExpired();
+                        reject(new Error('Trial Expired'));
+                        return;
+                    }
+                    
+                    if (result.status === 'error') {
+                        reject(new Error(result.message));
+                        return;
+                    }
+                    
+                    resolve(result);
+                } catch (e) {
+                    reject(new Error("Failed to parse server response."));
+                }
+            })
+            .withFailureHandler((error) => {
+                let loader = document.getElementById('loader-initial');
+                if (loader) loader.classList.add('hidden');
+                reject(error);
+            })
+            .handleBackendRequest(JSON.stringify(payload));
+    });
 };
-
 // ==========================================
 // 3. AUTHENTICATION & TRIAL LOGIC
 // ==========================================
