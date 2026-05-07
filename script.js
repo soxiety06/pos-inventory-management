@@ -20,7 +20,7 @@ if ('serviceWorker' in navigator) {
 // ==========================================
 // 2. FETCH API WRAPPER (HEADLESS REST API)
 // ==========================================
-const GAS_URL = "YOUR_NEW_EXEC_URL_HERE"; // Be sure to paste your latest /exec URL here!
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwGXsZl_YAd0rDSNVli3dTw-t1t16xOrKfrezrjca2QUPapSuiuGAZnNbu2BHpc8-kx/exec"; // Be sure to paste your latest /exec URL here!
 
 const api = async (method, data = {}) => {
     // 1. Show Loader
