@@ -26,63 +26,59 @@
 
     <div id="loader-login" class="fish-loader hidden" style="background: var(--bg-color); z-index: 99999;">
       <div class="card" style="text-align: center; max-width: 400px; width: 90%; padding: 40px 30px;">
-        <div class="swimming-fish" style="font-size: 4rem; animation-duration: 3s;">🔒</div>
         <h2 style="color: var(--primary); margin-top: 10px;">Ayen Aquatics POS</h2>
-        <p style="color: var(--text-muted); margin-bottom: 25px;">Enter your 4-digit PIN to access the system.</p>
+        <p style="color: var(--text-muted); margin-bottom: 25px;">Please log in to continue.</p>
         
-        <div class="input-group">
-          <input type="tel" id="loginPin" placeholder="****" style="text-align: center; font-size: 2rem; letter-spacing: 8px; -webkit-text-security: disc;" maxlength="4" autocomplete="off">
+        <div class="input-group" style="text-align: left;">
+          <label>Email Address</label>
+          <input type="email" id="loginEmail" placeholder="e.g. name@gmail.com" required>
+        </div>
+        <div class="input-group" style="text-align: left; margin-bottom: 20px;">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
         </div>
         
-        <button class="btn btn-primary btn-large" style="margin-top: 15px;" onclick="handleLogin()">Login</button>
+        <button class="btn btn-primary btn-large" onclick="handleLogin()">Login</button>
+        <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">
+          Testing the app? <a href="#" onclick="toggleAuthMode('register')" style="color: var(--primary); font-weight: bold; text-decoration: none;">Register here</a>
+        </p>
       </div>
     </div>
 
-    <div id="fish-loader" class="fish-loader-small hidden">
-      <div class="swimming-fish-small">🐠</div>
+    <div id="loader-register" class="fish-loader hidden" style="background: var(--bg-color); z-index: 99999;">
+      <div class="card" style="text-align: center; max-width: 400px; width: 90%; padding: 40px 30px;">
+        <h2 style="color: var(--primary); margin-top: 10px;">Start 2-Day Trial</h2>
+        <p style="color: var(--text-muted); margin-bottom: 25px;">Create an account to test the system.</p>
+        
+        <div class="input-group" style="text-align: left;">
+          <label>Full Name</label>
+          <input type="text" id="regName" placeholder="Juan Dela Cruz" required>
+        </div>
+        <div class="input-group" style="text-align: left;">
+          <label>Email Address</label>
+          <input type="email" id="regEmail" placeholder="e.g. name@gmail.com" required>
+        </div>
+        <div class="input-group" style="text-align: left; margin-bottom: 20px;">
+          <label>Create Password</label>
+          <input type="password" id="regPassword" placeholder="••••••••" required>
+        </div>
+        
+        <button class="btn btn-success btn-large" onclick="handleRegister()">Register Account</button>
+        <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">
+          Already registered? <a href="#" onclick="toggleAuthMode('login')" style="color: var(--primary); font-weight: bold; text-decoration: none;">Login here</a>
+        </p>
+      </div>
     </div>
-    <div id="toast-container" class="toast-container"></div>
 
-    <div id="addModal" class="modal-overlay hidden">
-      <div class="modal-content card">
-        <h3>Add New Product</h3>
-        <form id="addProductForm" onsubmit="handleAddProduct(event)">
-          <div class="form-row">
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Item Name</label>
-                <input type="text" id="itemName" placeholder="e.g., Fish Food" required>
-            </div>
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Category</label>
-                <input type="text" id="itemCategory" placeholder="e.g., Consumables" required list="categoryList">
-                <datalist id="categoryList"></datalist>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Cost Price (₱)</label>
-                <input type="number" id="itemCost" placeholder="0.00" step="0.01" required>
-            </div>
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Selling Price (₱)</label>
-                <input type="number" id="itemPrice" placeholder="0.00" step="0.01" required>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Initial Stock</label>
-                <input type="number" id="itemStock" placeholder="0" required>
-            </div>
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Low Stock Alert Threshold</label>
-                <input type="number" id="itemThreshold" placeholder="0" required>
-            </div>
-          </div>
-          <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="btnConfirmAdd">Confirm</button>
-          </div>
-        </form>
+    <div id="loader-expired" class="fish-loader hidden" style="background: var(--bg-color); z-index: 999999;">
+      <div class="card" style="text-align: center; max-width: 450px; width: 90%; padding: 40px 30px; border-top: 4px solid var(--danger);">
+        <h2 style="color: var(--danger); margin-top: 10px;">Trial Expired</h2>
+        <p style="color: var(--text-muted); margin-bottom: 15px;">Your 2-day testing period for Ayen Aquatics POS has concluded.</p>
+        <p style="font-size: 1rem; margin-bottom: 25px;">To continue using the system, please contact the developer to arrange permanent access.</p>
+        
+        <a href="mailto:karel.gal06@gmail.com" class="btn btn-primary btn-large" style="display: block; text-decoration: none; padding: 15px;">Contact: karel.gal06@gmail.com</a>
+        
+        <button class="btn btn-secondary" style="margin-top: 15px; width: 100%;" onclick="logout()">Log Out</button>
       </div>
     </div>
 
