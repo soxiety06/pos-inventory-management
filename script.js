@@ -10,7 +10,7 @@ let currentInvRowCount = 0;
 let currentSalesRowCount = 0;
 let syncInterval; 
 
-const GAS_URL = "YOUR_NEW_WEB_APP_URL_HERE"; // Update this after deployment
+const GAS_URL = "YOUR_NEW_WEB_APP_URL_HERE"; // Remember to update this!
 
 document.addEventListener("DOMContentLoaded", checkSession);
 google.charts.load('current', {'packages':['corechart']});
@@ -114,7 +114,6 @@ async function handleLogin() {
 
 async function authenticate(email, pass) {
     try {
-        // FIX 1: Save credentials to memory FIRST so the API wrapper can send them
         sessionStorage.setItem('pos_email', email); 
         sessionStorage.setItem('pos_pass', pass); 
 
@@ -122,14 +121,12 @@ async function authenticate(email, pass) {
         
         if (accessRes.status === 'success') {
             currentUserName = accessRes.name;
-
             await loadGlobalData();
             document.getElementById('loader-initial').classList.add('hidden');
             startSilentSync();
             showToast(`Welcome, ${currentUserName}!`);
         }
     } catch (e) {
-        // FIX 2: If Google rejects the login, wipe the bad credentials and show the error WITHOUT reloading the page
         sessionStorage.removeItem('pos_email'); 
         sessionStorage.removeItem('pos_pass'); 
         
@@ -153,6 +150,7 @@ function logout() {
     sessionStorage.removeItem('pos_pass'); 
     window.location.reload();
 }
+
 // ==========================================
 // 4. GLOBAL DATA & UTILITIES
 // ==========================================
@@ -167,7 +165,7 @@ function startSilentSync() {
            await loadGlobalData(); 
            showToast("Database synced", "success"); 
         }
-      } catch(e) { /* Ignore minor network disconnects */ }
+      } catch(e) { }
     }, 10000); 
 }
 
@@ -210,76 +208,7 @@ async function loadGlobalData() {
 }
 
 // ==========================================
-// 5. ADMIN FUNCTIONS
-// ==========================================
-async function loadAdminData() {
-    try {
-      const data = await api('getAdminDataAPI');
-      
-      let reqHtml = '<table class="table-compact"><thead><tr><th>User Detail</th><th>Action</th></tr></thead><tbody>';
-      if(data.requests.length === 0) reqHtml += '<tr><td colspan="2" style="text-align:center; padding:15px;">No pending requests.</td></tr>';
-      
-      data.requests.forEach(req => {
-        reqHtml += `<tr>
-          <td><strong>${req[1]}</strong><br><small>${req[0]}</small><br><small style="color:var(--text-muted)">${req[3]}</small></td>
-          <td>
-            <select id="role-${req[0]}" class="btn-sm" style="margin-bottom:5px;">
-              <option value="User">User</option><option value="Admin">Admin</option>
-            </select><br>
-            <button onclick="handleRequest('${req[0]}', 'approve')" class="btn btn-sm btn-success">Approve</button>
-            <button onclick="handleRequest('${req[0]}', 'reject')" class="btn btn-sm btn-danger">Reject</button>
-          </td>
-        </tr>`;
-      });
-      document.getElementById('pendingRequestsContainer').innerHTML = reqHtml + '</tbody></table>';
-
-      let userHtml = '<table class="table-compact"><thead><tr><th>User Detail</th><th>Role</th><th>Action</th></tr></thead><tbody>';
-      data.users.forEach(user => {
-        let isMe = user[0] === currentUserName; // Note: updated to use name or PIN logic if preferred
-        
-        userHtml += `<tr>
-          <td><strong>${user[1]}</strong><br><small>${user[0]}</small></td>
-          <td>
-            <select onchange="updateRole('${user[0]}', this.value)" class="btn-sm" ${isMe ? 'disabled' : ''}>
-              <option value="User" ${user[2] === 'User' ? 'selected' : ''}>User</option>
-              <option value="Admin" ${user[2] === 'Admin' ? 'selected' : ''}>Admin</option>
-            </select>
-          </td>
-          <td>
-            <button onclick="removeUser('${user[0]}')" class="btn btn-sm btn-danger" ${isMe ? 'disabled' : ''}>Revoke</button>
-          </td>
-        </tr>`;
-      });
-      document.getElementById('authorizedUsersContainer').innerHTML = userHtml + '</tbody></table>';
-
-    } catch(e) {
-      console.error(e);
-      document.getElementById('authorizedUsersContainer').innerHTML = `<p style="color:red">Failed to load admin data.</p>`;
-    }
-}
-
-async function handleRequest(email, action) {
-    let role = document.getElementById(`role-${email}`).value;
-    await api('processAccessRequestAPI', { email: email, action: action, role: role });
-    showToast(`User ${action}d!`);
-    loadAdminData();
-}
-
-async function updateRole(email, newRole) {
-    await api('updateAccessAPI', { email: email, action: 'role', role: newRole });
-    showToast('Role updated!');
-    loadAdminData();
-}
-
-async function removeUser(email) {
-    if(!confirm(`Revoke access for ${email}?`)) return;
-    await api('updateAccessAPI', { email: email, action: 'remove' });
-    showToast('User removed!');
-    loadAdminData();
-}
-
-// ==========================================
-// 6. INVENTORY MANAGEMENT
+// 5. INVENTORY MANAGEMENT
 // ==========================================
 function openAddModal() {
     document.getElementById('addProductForm').reset();
@@ -454,7 +383,7 @@ function filterInventoryTable() {
 }
 
 // ==========================================
-// 7. POS TERMINAL
+// 6. POS TERMINAL
 // ==========================================
 function populateDropdowns() {
     const list = document.getElementById('posDropdown');
@@ -698,7 +627,7 @@ async function processSale() {
 }
 
 // ==========================================
-// 8. DASHBOARD & ANALYTICS
+// 7. DASHBOARD & ANALYTICS
 // ==========================================
 function renderDashboard() {
     let totalStockUnits = 0; 
@@ -865,7 +794,7 @@ function updateTargetSalesDashboard() {
 }
 
 // ==========================================
-// 9. HISTORY & RECENT SALES
+// 8. HISTORY & RECENT SALES
 // ==========================================
 function renderRecentSales() {
     const todayString = new Date().toDateString();
@@ -1013,7 +942,7 @@ function renderHistoryTable() {
 }
 
 // ==========================================
-// 10. MODALS & NAVIGATION
+// 9. MODALS & NAVIGATION
 // ==========================================
 function openRecentSalesModal() {
     document.getElementById('recentSalesModal').classList.remove('hidden');
