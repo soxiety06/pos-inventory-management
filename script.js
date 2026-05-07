@@ -39,7 +39,8 @@ const api = async (method, data = {}) => {
         const response = await fetch(cacheBusterUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: method, email: storedEmail, password: storedPass, data: data }),
+            // CRITICAL CHECK: Ensure this says 'username: storedUsername'
+            body: JSON.stringify({ action: method, username: storedUsername, password: storedPass, data: data }),
             redirect: 'follow'
         });
 
