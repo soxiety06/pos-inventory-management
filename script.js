@@ -20,7 +20,7 @@ if ('serviceWorker' in navigator) {
 // ==========================================
 // 2. FETCH API WRAPPER (HEADLESS REST API)
 // ==========================================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwGXsZl_YAd0rDSNVli3dTw-t1t16xOrKfrezrjca2QUPapSuiuGAZnNbu2BHpc8-kx/exec"; // You must paste your new deployment URL here
+const GAS_URL = "YOUR_NEW_EXEC_URL_HERE"; // Be sure to paste your latest /exec URL here!
 
 const api = async (method, data = {}) => {
     // 1. Show Loader
@@ -29,18 +29,23 @@ const api = async (method, data = {}) => {
         if (loader) loader.classList.remove('hidden');
     }
 
-    const storedEmail = sessionStorage.getItem('pos_username') || "";
+    // 2. Fetch Session Data (THIS FIXES THE ERROR!)
+    const storedUsername = sessionStorage.getItem('pos_username') || "";
     const storedPass = sessionStorage.getItem('pos_pass') || "";
 
     try {
-        // We add a timestamp query parameter (?t=...) to force bypass browser cache
+        // Cache buster to ensure GitHub doesn't serve old transactions
         const cacheBusterUrl = GAS_URL + "?t=" + new Date().getTime();
         
         const response = await fetch(cacheBusterUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            // CRITICAL CHECK: Ensure this says 'username: storedUsername'
-            body: JSON.stringify({ action: method, username: storedUsername, password: storedPass, data: data }),
+            body: JSON.stringify({ 
+                action: method, 
+                username: storedUsername, 
+                password: storedPass, 
+                data: data 
+            }),
             redirect: 'follow'
         });
 
@@ -48,14 +53,13 @@ const api = async (method, data = {}) => {
         let result;
         
         try {
-            // If this fails, it means Google returned an HTML error page instead of your JSON
             result = JSON.parse(textResponse);
         } catch (e) {
             console.error("Server returned HTML instead of JSON:", textResponse);
-            throw new Error("API Connection Blocked: Check GAS Deployment settings (Execute as Me, Access Anyone).");
+            throw new Error("API Connection Blocked. Check GAS Deployment settings.");
         }
 
-        // 2. Hide Loader
+        // 3. Hide Loader
         let loader = document.getElementById('loader-initial');
         if (loader) loader.classList.add('hidden');
         
