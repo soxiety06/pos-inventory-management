@@ -71,6 +71,48 @@
       </div>
     </div>
 
+    <div id="addModal" class="modal-overlay hidden">
+      <div class="modal-content card">
+        <h3>Add New Product</h3>
+        <form id="addProductForm" onsubmit="handleAddProduct(event)">
+          <div class="form-row">
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Item Name</label>
+                <input type="text" id="itemName" required>
+            </div>
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Category</label>
+                <input type="text" id="itemCategory" required list="categoryList">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Cost Price (₱)</label>
+                <input type="number" id="itemCost" step="0.01" required>
+            </div>
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Selling Price (₱)</label>
+                <input type="number" id="itemPrice" step="0.01" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Initial Stock</label>
+                <input type="number" id="itemStock" required>
+            </div>
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label>Low Stock Threshold</label>
+                <input type="number" id="itemThreshold" required>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btnConfirmAdd">Confirm</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
     <div id="loader-expired" class="fish-loader hidden" style="background: var(--bg-color); z-index: 999999;">
       <div class="card" style="text-align: center; max-width: 450px; width: 90%; padding: 40px 30px; border-top: 4px solid var(--danger);">
         <h2 style="color: var(--danger); margin-top: 10px;">Trial Expired</h2>
