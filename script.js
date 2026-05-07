@@ -23,8 +23,10 @@ if ('serviceWorker' in navigator) {
 // 2. FETCH API WRAPPER
 // ==========================================
 const api = async (method, data = {}) => {
+    // FIX: Changed 'fish-loader' to 'loader-initial' to match the HTML ID
     if (method !== 'loginAPI' && method !== 'registerUserAPI' && method !== 'checkDataSyncAPI' && method !== 'getStartupDataAPI') {
-        document.getElementById('fish-loader').classList.remove('hidden');
+        let loader = document.getElementById('loader-initial');
+        if (loader) loader.classList.remove('hidden');
     }
 
     const storedEmail = sessionStorage.getItem('pos_email') || "";
@@ -39,7 +41,10 @@ const api = async (method, data = {}) => {
         });
 
         const result = await response.json();
-        document.getElementById('fish-loader').classList.add('hidden');
+        
+        // FIX: Changed 'fish-loader' to 'loader-initial'
+        let loader = document.getElementById('loader-initial');
+        if (loader) loader.classList.add('hidden');
         
         if (result.message === 'TRIAL_EXPIRED') {
             triggerTrialExpired();
@@ -50,7 +55,10 @@ const api = async (method, data = {}) => {
         return result;
 
     } catch (error) {
-        document.getElementById('fish-loader').classList.add('hidden');
+        // FIX: Changed 'fish-loader' to 'loader-initial'
+        let loader = document.getElementById('loader-initial');
+        if (loader) loader.classList.add('hidden');
+        
         if(error.message !== 'Trial Expired') throw error;
     }
 };
