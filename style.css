@@ -664,3 +664,8 @@ main#app-content {
     padding: 15px;
   }
 }
+/* Add this at the very bottom of your existing style.css */
+@media screen and (max-width: 600px) {
+  form .form-row { flex-direction: column; gap: 0; }
+  .modal-content { padding-bottom: 20px; overflow-y: auto; }
+}
