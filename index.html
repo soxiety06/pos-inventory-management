@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="POS & Inventory">
+  <meta name="apple-mobile-web-app-title" content="Ayen Aquatics">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#4f46e5">
-  <meta name="application-name" content="POS & Inventory">
+  <meta name="application-name" content="Ayen Aquatics">
 
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -16,19 +16,19 @@
   <link rel="stylesheet" href="style.css">
 
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <title>POS and Inventory Management Tool</title>
+  <title>Ayen Aquatics</title>
 </head>
 <body>
   <datalist id="categoryList"></datalist>
   
   <div id="loader-initial" class="fish-loader">
-    <div class="swimming-fish">📦</div>
-    <div class="water-text">POS System is Loading...</div>
+    <div class="swimming-fish">🐟</div>
+    <div class="water-text">Ayen Aquatics is Loading...</div>
   </div>
 
   <div id="loader-login" class="fish-loader hidden" style="background: var(--bg-color); z-index: 99999;">
     <div class="card" style="text-align: center; max-width: 400px; width: 90%; padding: 40px 30px;">
-      <h2 style="color: var(--primary); margin-top: 10px;">POS & Inventory Tool</h2>
+      <h2 style="color: var(--primary); margin-top: 10px;">Ayen Aquatics</h2>
       <p style="color: var(--text-muted); margin-bottom: 25px;">Please log in to continue.</p>
 
       <div class="input-group" style="text-align: left;">
@@ -50,7 +50,7 @@
   <div id="loader-register" class="fish-loader hidden" style="background: var(--bg-color); z-index: 99999;">
     <div class="card" style="text-align: center; max-width: 400px; width: 90%; padding: 40px 30px;">
       <h2 style="color: var(--primary); margin-top: 10px;">Create Account</h2>
-      <p style="color: var(--text-muted); margin-bottom: 25px;">Register to access the POS system.</p>
+      <p style="color: var(--text-muted); margin-bottom: 25px;">Register to access Ayen Aquatics.</p>
 
       <div class="input-group" style="text-align: left;">
         <label>Full Name</label>
@@ -76,6 +76,16 @@
     <div class="modal-content card">
       <h3>Add New Product</h3>
       <form id="addProductForm" onsubmit="handleAddProduct(event)">
+        <div class="form-row">
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Item Name</label>
+            <input type="text" id="itemName" required>
+          </div>
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Category</label>
+            <input type="text" id="itemCategory" required list="categoryList">
+          </div>
+        </div>
         <div class="form-row">
           <div class="input-group" style="flex: 1; margin-bottom: 0;">
             <label>Cost Price (₱)</label>
@@ -108,21 +118,25 @@
     <div class="modal-content card">
       <h3>Log New Expense</h3>
       <form id="addExpenseForm" onsubmit="handleAddExpense(event)">
+        <div class="form-row">
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Description</label>
+            <input type="text" id="expDesc" placeholder="e.g. Fish Food Restock" required>
+          </div>
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Category</label>
+            <input type="text" id="expCategory" placeholder="e.g. Supplies" required>
+          </div>
+        </div>
+        <div class="input-group" style="margin-top: 16px;">
+          <label>Amount (₱)</label>
+          <input type="number" id="expAmount" step="0.01" required>
+        </div>
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary" onclick="closeAddExpenseModal()">Cancel</button>
           <button type="submit" class="btn btn-primary" id="btnConfirmExpense">Save Expense</button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <div id="loader-expired" class="fish-loader hidden" style="background: var(--bg-color); z-index: 999999;">
-    <div class="card" style="text-align: center; max-width: 450px; width: 90%; padding: 40px 30px; border-top: 4px solid var(--danger);">
-      <h2 style="color: var(--danger); margin-top: 10px;">Trial Expired</h2>
-      <p style="color: var(--text-muted); margin-bottom: 15px;">Your 2-day testing period for the POS & Inventory Management Tool has concluded.</p>
-      <p style="font-size: 1rem; margin-bottom: 25px;">To continue using the system, please contact the developer to arrange permanent access.</p>
-      <a href="mailto:admin@example.com" class="btn btn-primary btn-large" style="display: block; text-decoration: none; padding: 15px;">Contact Admin</a>
-      <button class="btn btn-secondary" style="margin-top: 15px; width: 100%;" onclick="logout()">Log Out</button>
     </div>
   </div>
 
@@ -191,7 +205,7 @@
       <div class="header-title">
         <div style="display: flex; align-items: center; gap: 12px;">
           <img src="icon-192.png" alt="POS Logo" class="app-logo">
-          <h1 style="margin: 0;">POS and Inventory Management Tool</h1>
+          <h1 style="margin: 0;">Ayen Aquatics</h1>
         </div>
         <div style="display: flex; align-items: center; gap: 15px;">
           <span class="status-badge status-good" id="connection-status">🟢 Connected</span>
