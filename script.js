@@ -4,7 +4,7 @@
 let currentUserName = '';
 let inventoryData = [];
 let recentSalesData = [];
-let expenseData = []; // Moved to globals for proper scoping
+let expenseData = []; 
 let selectedItemRow = null; 
 let posCart = [];
 let currentInvRowCount = 0;
@@ -22,7 +22,7 @@ if ('serviceWorker' in navigator) {
 // ==========================================
 // 2. FETCH API WRAPPER (HEADLESS REST API)
 // ==========================================
-// 🚨 YOU MUST PASTE YOUR APPS SCRIPT DEPLOYMENT URL HERE 🚨
+// 🚨 PASTE YOUR APPS SCRIPT DEPLOYMENT URL HERE 🚨
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwGXsZl_YAd0rDSNVli3dTw-t1t16xOrKfrezrjca2QUPapSuiuGAZnNbu2BHpc8-kx/exec"; 
 
 const api = async (method, data = {}) => {
@@ -37,7 +37,6 @@ const api = async (method, data = {}) => {
   try {
     const cacheBusterUrl = GAS_URL + "?t=" + new Date().getTime();
     
-    // Use text/plain to bypass CORS preflight OPTIONS request
     const response = await fetch(cacheBusterUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -74,7 +73,7 @@ const api = async (method, data = {}) => {
 };
 
 // ==========================================
-// 3. AUTHENTICATION (CUSTOM LOGIN FOR GITHUB PAGES)
+// 3. AUTHENTICATION
 // ==========================================
 function toggleAuthMode(mode) {
   if (mode === 'register') {
@@ -111,11 +110,9 @@ async function handleRegister() {
   try {
     await api('registerUserAPI', { username: username, name: name, password: pass });
     
-    // UI Transition: Hide initial loader, go back to Login modal
     document.getElementById('loader-initial').classList.add('hidden');
     document.getElementById('loader-login').classList.remove('hidden');
     
-    // Clear registration inputs
     document.getElementById('regName').value = '';
     document.getElementById('regUsername').value = '';
     document.getElementById('regPassword').value = '';
@@ -141,15 +138,12 @@ async function handleLogin() {
 
 async function authenticate(username, pass) {
   try {
-    // 1. Temporarily store credentials so the api() wrapper can attach them to the payload
     sessionStorage.setItem('pos_username', username); 
     sessionStorage.setItem('pos_pass', pass); 
 
-    // 2. Ping the backend to verify credentials and check Admin Approval status
     const accessRes = await api('loginAPI', null); 
     
     if (accessRes.status === 'success') {
-      // 3. Status is Approved - Proceed with app initialization
       currentUserName = accessRes.name;
       await loadGlobalData();
       
@@ -157,21 +151,22 @@ async function authenticate(username, pass) {
       startSilentSync();
       showToast(`Welcome, ${currentUserName}!`);
     } else {
-      // Throw an error to trigger the catch block below (e.g., "Account pending admin approval.")
       throw new Error(accessRes.message);
     }
   } catch (e) {
-    // 4. Status is Pending/Rejected or Wrong Password - Scrub the session storage immediately
     sessionStorage.removeItem('pos_username'); 
     sessionStorage.removeItem('pos_pass'); 
     
-    // Reset UI back to login screen
     document.getElementById('loader-initial').classList.add('hidden');
     document.getElementById('loader-login').classList.remove('hidden');
-    
-    // Display the rejection/pending message to the user
     showToast(e.message, 'error');
   }
+}
+
+function logout() {
+  sessionStorage.removeItem('pos_username'); 
+  sessionStorage.removeItem('pos_pass'); 
+  window.location.reload();
 }
 
 // ==========================================
@@ -181,7 +176,12 @@ function startSilentSync() {
   if (syncInterval) clearInterval(syncInterval);
   syncInterval = setInterval(async () => {
     try {
-      let res = await api('checkDataSyncAPI', currentInvRowCount, currentSalesRowCount);
+      // BUG FIX: Passed as object instead of separate params
+      let res = await api('checkDataSyncAPI', {
+        clientInvCount: currentInvRowCount, 
+        clientSalesCount: currentSalesRowCount, 
+        clientExpCount: currentExpenseRowCount
+      });
       if (res && res.changed) {
         await loadGlobalData(); 
         showToast("Database synced", "success"); 
@@ -209,7 +209,7 @@ async function loadGlobalData() {
     if (response.status === 'success') {
       inventoryData = response.inventory;
       recentSalesData = response.sales;
-      expenseData = response.expenses || []; // Ensure expenses array exists
+      expenseData = response.expenses || []; 
       
       currentInvRowCount = inventoryData.length + 1;
       currentSalesRowCount = recentSalesData.length + 1;
@@ -217,8 +217,8 @@ async function loadGlobalData() {
       
       renderInventoryTable();
       populateDropdowns();
-      renderExpenseTable(); // Render expenses before dashboard
-      renderDashboard();    // Safe to render now
+      renderExpenseTable(); 
+      renderDashboard();    
       renderRecentSales(); 
       renderHistoryTable();
       
@@ -319,7 +319,7 @@ async function submitEditProduct(e) {
 async function handleDeleteProduct(itemId, itemName) {
   if (!confirm(`Are you sure you want to delete "${itemName}"?`)) return;
   try {
-    await api('deleteProduct', itemId); // Passed directly as argument per your backend update
+    await api('deleteProduct', { itemId: itemId }); 
     showToast('Product deleted successfully!');
     await loadGlobalData();
   } catch (error) {
@@ -671,7 +671,6 @@ function renderDashboard() {
     allTime: { sales: 0, profit: 0, cost: 0, expenses: 0 }
   };
 
-  // Initialize daily trends (Last 7 days)
   let last7Days = [...Array(7)].map((_, i) => {
     let d = new Date();
     d.setDate(d.getDate() - i);
@@ -680,7 +679,6 @@ function renderDashboard() {
   
   last7Days.forEach(day => dailyTrends[day] = 0);
 
-  // Process Expenses
   expenseData.forEach(row => {
     let dateObj = new Date(row[1]);
     let amount = parseFloat(row[4]) || 0;
@@ -695,7 +693,6 @@ function renderDashboard() {
     }
   });
 
-  // Process Inventory
   inventoryData.forEach(row => {
     let stock = parseInt(row[5]) || 0;
     let threshold = parseInt(row[6]) || 0;
@@ -706,7 +703,6 @@ function renderDashboard() {
     categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
   });
 
-  // Process Sales
   recentSalesData.forEach(row => {
     if (row[9] === 'Voided') return; 
     
@@ -735,12 +731,10 @@ function renderDashboard() {
     if (dailyTrends[dateString] !== undefined) dailyTrends[dateString] += totalSales;
   });
 
-  // Calculate TRUE Net Profit (Revenue - COGS - Operational Expenses)
   let trueProfitToday = financials.today.profit - financials.today.expenses;
   let trueProfitMonth = financials.month.profit - financials.month.expenses;
   let trueProfitAllTime = financials.allTime.profit - financials.allTime.expenses;
 
-  // Output to UI
   const formatCurrency = (val) => '₱' + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
   const calcMargin = (profit, sales) => sales > 0 ? ((profit / sales) * 100).toFixed(1) + '%' : '0.0%';
 
@@ -778,7 +772,6 @@ function renderDashboard() {
     `;
   }
 
-  // Draw Google Charts
   if (google.visualization && typeof google.visualization.arrayToDataTable === 'function') {
     let catData = [['Category', 'Products']];
     for (const [cat, count] of Object.entries(categoryCounts)) { catData.push([cat, count]); }
@@ -834,7 +827,7 @@ async function handleAddExpense(e) {
     await api('addExpenseAPI', expPayload);
     showToast('Expense recorded successfully!');
     closeAddExpenseModal();
-    await loadGlobalData(); // Reloads all tables and updates dashboard
+    await loadGlobalData(); 
   } catch (error) {
     showToast('Error recording expense: ' + error.message, 'error');
   } finally {
