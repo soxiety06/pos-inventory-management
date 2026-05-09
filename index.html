@@ -72,45 +72,22 @@
       </div>
     </div>
 
-    <div id="addModal" class="modal-overlay hidden">
-      <div class="modal-content card">
-        <h3>Add New Product</h3>
-        <form id="addProductForm" onsubmit="handleAddProduct(event)">
-          <div class="form-row">
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Item Name</label>
-                <input type="text" id="itemName" required>
-            </div>
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Category</label>
-                <input type="text" id="itemCategory" required list="categoryList">
-            </div>
-          </div>
+   <div id="addModal" class="modal-overlay hidden">
+  <div class="modal-content card">
+    <h3>Add New Product</h3>
+    <form id="addProductForm" onsubmit="handleAddProduct(event)">
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btnConfirmAdd">Confirm</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-          <div id="addExpenseModal" class="modal-overlay hidden">
+<div id="addExpenseModal" class="modal-overlay hidden">
   <div class="modal-content card">
     <h3>Log New Expense</h3>
     <form id="addExpenseForm" onsubmit="handleAddExpense(event)">
-      <div class="input-group">
-        <label>Description</label>
-        <input type="text" id="expDesc" placeholder="e.g., Electricity Bill, Restock Transport" required>
-      </div>
-      <div class="form-row">
-        <div class="input-group" style="flex: 1; margin-bottom: 0;">
-          <label>Category</label>
-          <select id="expCategory" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
-            <option value="Utilities">Utilities</option>
-            <option value="Supplies">Supplies</option>
-            <option value="Logistics">Logistics/Transport</option>
-            <option value="Marketing">Marketing</option>
-            <option value="Miscellaneous">Miscellaneous</option>
-          </select>
-        </div>
-        <div class="input-group" style="flex: 1; margin-bottom: 0;">
-          <label>Amount (₱)</label>
-          <input type="number" id="expAmount" step="0.01" min="0" required>
-        </div>
-      </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-secondary" onclick="closeAddExpenseModal()">Cancel</button>
         <button type="submit" class="btn btn-primary" id="btnConfirmExpense">Save Expense</button>
