@@ -31,7 +31,8 @@ const api = async (method, data = {}) => {
     if (loader) loader.classList.remove('hidden');
   }
 
-  const storedUsername = sessionStorage.getItem('pos_username') || "";
+  // Update session keys to map to emails
+  const storedEmail = sessionStorage.getItem('pos_email') || "";
   const storedPass = sessionStorage.getItem('pos_pass') || "";
 
   try {
@@ -42,7 +43,7 @@ const api = async (method, data = {}) => {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ 
         action: method, 
-        username: storedUsername, 
+        email: storedEmail, // Passed as email
         password: storedPass, 
         data: data 
       }),
@@ -86,38 +87,39 @@ function toggleAuthMode(mode) {
 }
 
 async function checkSession() {
-  const username = sessionStorage.getItem('pos_username');
+  const email = sessionStorage.getItem('pos_email');
   const pass = sessionStorage.getItem('pos_pass');
   
-  if (!username || !pass) {
+  if (!email || !pass) {
     document.getElementById('loader-initial').classList.add('hidden');
     document.getElementById('loader-login').classList.remove('hidden');
     return;
   }
-  await authenticate(username, pass);
+  await authenticate(email, pass);
 }
 
 async function handleRegister() {
   const name = document.getElementById('regName').value;
-  const username = document.getElementById('regUsername').value;
+  const email = document.getElementById('regEmail').value;
   const pass = document.getElementById('regPassword').value;
   
-  if (!name || !username || !pass) return showToast('Please fill all fields', 'error');
+  if (!name || !email || !pass) return showToast('Please fill all fields', 'error');
 
   document.getElementById('loader-register').classList.add('hidden');
   document.getElementById('loader-initial').classList.remove('hidden');
   
   try {
-    await api('registerUserAPI', { username: username, name: name, password: pass });
+    // Send email to backend
+    await api('registerUserAPI', { email: email, name: name, password: pass });
     
     document.getElementById('loader-initial').classList.add('hidden');
     document.getElementById('loader-login').classList.remove('hidden');
     
     document.getElementById('regName').value = '';
-    document.getElementById('regUsername').value = '';
+    document.getElementById('regEmail').value = '';
     document.getElementById('regPassword').value = '';
 
-    showToast('Registration successful! Please wait for Admin approval to log in.', 'success');
+    showToast('Request submitted! Please wait for Admin approval.', 'success');
   } catch(e) {
     document.getElementById('loader-initial').classList.add('hidden');
     document.getElementById('loader-register').classList.remove('hidden');
@@ -126,19 +128,19 @@ async function handleRegister() {
 }
 
 async function handleLogin() {
-  const username = document.getElementById('loginUsername').value;
+  const email = document.getElementById('loginEmail').value;
   const pass = document.getElementById('loginPassword').value;
-  if (!username || !pass) return showToast('Please enter username and password', 'error');
+  if (!email || !pass) return showToast('Please enter email and password', 'error');
   
   document.getElementById('loader-login').classList.add('hidden');
   document.getElementById('loader-initial').classList.remove('hidden');
   
-  await authenticate(username, pass);
+  await authenticate(email, pass);
 }
 
-async function authenticate(username, pass) {
+async function authenticate(email, pass) {
   try {
-    sessionStorage.setItem('pos_username', username); 
+    sessionStorage.setItem('pos_email', email); 
     sessionStorage.setItem('pos_pass', pass); 
 
     const accessRes = await api('loginAPI', null); 
@@ -154,7 +156,7 @@ async function authenticate(username, pass) {
       throw new Error(accessRes.message);
     }
   } catch (e) {
-    sessionStorage.removeItem('pos_username'); 
+    sessionStorage.removeItem('pos_email'); 
     sessionStorage.removeItem('pos_pass'); 
     
     document.getElementById('loader-initial').classList.add('hidden');
@@ -164,7 +166,7 @@ async function authenticate(username, pass) {
 }
 
 function logout() {
-  sessionStorage.removeItem('pos_username'); 
+  sessionStorage.removeItem('pos_email'); 
   sessionStorage.removeItem('pos_pass'); 
   window.location.reload();
 }
