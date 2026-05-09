@@ -110,8 +110,17 @@ async function handleRegister() {
   
   try {
     await api('registerUserAPI', { username: username, name: name, password: pass });
-    showToast('Registration successful! Logging you in...', 'success');
-    await authenticate(username, pass);
+    
+    // UI Transition: Hide initial loader, go back to Login modal
+    document.getElementById('loader-initial').classList.add('hidden');
+    document.getElementById('loader-login').classList.remove('hidden');
+    
+    // Clear registration inputs
+    document.getElementById('regName').value = '';
+    document.getElementById('regUsername').value = '';
+    document.getElementById('regPassword').value = '';
+
+    showToast('Registration successful! Please wait for Admin approval to log in.', 'success');
   } catch(e) {
     document.getElementById('loader-initial').classList.add('hidden');
     document.getElementById('loader-register').classList.remove('hidden');
@@ -132,21 +141,25 @@ async function handleLogin() {
 
 async function authenticate(username, pass) {
   try {
-    sessionStorage.setItem('pos_username', username); 
-    sessionStorage.setItem('pos_pass', pass); 
-
     const accessRes = await api('loginAPI', null); 
     
     if (accessRes.status === 'success') {
+      // Only commit to session storage IF the API returns success/approved
+      sessionStorage.setItem('pos_username', username); 
+      sessionStorage.setItem('pos_pass', pass); 
+
       currentUserName = accessRes.name;
       await loadGlobalData();
       document.getElementById('loader-initial').classList.add('hidden');
       startSilentSync();
       showToast(`Welcome, ${currentUserName}!`);
+    } else {
+      throw new Error(accessRes.message);
     }
   } catch (e) {
     sessionStorage.removeItem('pos_username'); 
     sessionStorage.removeItem('pos_pass'); 
+    
     document.getElementById('loader-initial').classList.add('hidden');
     document.getElementById('loader-login').classList.remove('hidden');
     showToast(e.message, 'error');
