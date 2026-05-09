@@ -86,6 +86,39 @@
                 <input type="text" id="itemCategory" required list="categoryList">
             </div>
           </div>
+
+          <div id="addExpenseModal" class="modal-overlay hidden">
+  <div class="modal-content card">
+    <h3>Log New Expense</h3>
+    <form id="addExpenseForm" onsubmit="handleAddExpense(event)">
+      <div class="input-group">
+        <label>Description</label>
+        <input type="text" id="expDesc" placeholder="e.g., Electricity Bill, Restock Transport" required>
+      </div>
+      <div class="form-row">
+        <div class="input-group" style="flex: 1; margin-bottom: 0;">
+          <label>Category</label>
+          <select id="expCategory" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+            <option value="Utilities">Utilities</option>
+            <option value="Supplies">Supplies</option>
+            <option value="Logistics">Logistics/Transport</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Miscellaneous">Miscellaneous</option>
+          </select>
+        </div>
+        <div class="input-group" style="flex: 1; margin-bottom: 0;">
+          <label>Amount (₱)</label>
+          <input type="number" id="expAmount" step="0.01" min="0" required>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeAddExpenseModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btnConfirmExpense">Save Expense</button>
+      </div>
+    </form>
+  </div>
+</div>
+          
           <div class="form-row">
             <div class="input-group" style="flex: 1; margin-bottom: 0;">
                 <label>Cost Price (₱)</label>
@@ -200,6 +233,7 @@
           <button onclick="switchTab('pos')" id="tab-pos" class="active">POS Terminal</button>
           <button onclick="switchTab('dashboard')" id="tab-dashboard">Dashboard</button>
           <button onclick="switchTab('inventory')" id="tab-inventory">Inventory</button>
+          <button onclick="switchTab('expenses')" id="tab-expenses">Expenses</button>
           <button onclick="switchTab('history')" id="tab-history">History</button> 
         </nav>
       </header>
@@ -213,6 +247,9 @@
         </button>
         <button onclick="switchTab('inventory')" id="mob-inventory">
           <span class="icon">📦</span><span>Stock</span>
+        </button>
+        <button onclick="switchTab('expenses')" id="mob-expenses">
+        <span class="icon">💸</span><span>Expenses</span>
         </button>
         <button onclick="switchTab('history')" id="mob-history">
           <span class="icon">🕒</span><span>Hist</span>
@@ -381,6 +418,34 @@
             <div id="inventoryTableContainer" class="scrollable-table-wrapper"></div>
           </div>
         </div>
+
+        <div id="expenses" class="tab-content">
+  <div class="section-header">
+    <h2>Expense Tracking</h2>
+    <p>Monitor daily and monthly operational costs.</p>
+  </div>
+
+  <div class="kpi-grid" style="margin-bottom: 20px;">
+    <div class="kpi-card">
+      <div class="kpi-title">Today's Expenses</div>
+      <div class="kpi-value" style="color: var(--danger)" id="expToday">₱0.00</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">This Month's Expenses</div>
+      <div class="kpi-value" style="color: var(--danger)" id="expMonth">₱0.00</div>
+    </div>
+  </div>
+
+  <div class="card table-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <h3 style="margin: 0;">Recent Expenses</h3>
+      <button class="btn btn-primary" onclick="openAddExpenseModal()">+ Add Expense</button>
+    </div>
+    <div id="expenseTableContainer" class="scrollable-table-wrapper">
+       </div>
+  </div>
+</div>
+        
 
         <div id="history" class="tab-content">
           <div class="section-header">
