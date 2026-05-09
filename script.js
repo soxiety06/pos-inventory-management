@@ -171,14 +171,20 @@ function logout() {
 // ==========================================
 // 4. GLOBAL DATA & UTILITIES
 // ==========================================
+let expenseData = [];
+let currentExpenseRowCount = 0;
+
+// Update your silent sync interval to track expenses
 function startSilentSync() {
     if (syncInterval) clearInterval(syncInterval);
-    
     syncInterval = setInterval(async () => {
       try {
-        let res = await api('checkDataSyncAPI', { clientInvCount: currentInvRowCount, clientSalesCount: currentSalesRowCount });
+        let res = await api('checkDataSyncAPI', { 
+            clientInvCount: currentInvRowCount, 
+            clientSalesCount: currentSalesRowCount,
+            clientExpenseCount: currentExpenseRowCount // Added
+        });
         if (res && res.changed) {
-           console.log("Database change detected! Silently updating UI...");
            await loadGlobalData(); 
            showToast("Database synced", "success"); 
         }
@@ -213,9 +219,7 @@ async function loadGlobalData() {
         populateDropdowns();
         renderDashboard();
         renderRecentSales(); 
-        renderHistoryTable(); 
-        
-        // REMOVED: updateTargetSalesDashboard(); <--- Delete this line
+        renderHistoryTable();
         
       } else {
         throw new Error(response.message);
@@ -662,10 +666,112 @@ function renderDashboard() {
     let dailyTrends = {};
 
     let financials = {
-      today: { sales: 0, profit: 0, cost: 0 },
-      month: { sales: 0, profit: 0, cost: 0 },
-      allTime: { sales: 0, profit: 0, cost: 0 }
+    today: { sales: 0, profit: 0, cost: 0, expenses: 0 },
+    month: { sales: 0, profit: 0, cost: 0, expenses: 0 },
+    allTime: { sales: 0, profit: 0, cost: 0, expenses: 0 }
     };
+
+    expenseData.forEach(row => {
+    let dateObj = new Date(row[1]);
+    let amount = parseFloat(row[4]) || 0;
+    
+    financials.allTime.expenses += amount;
+    
+    if (dateObj.toDateString() === today.toDateString()) {
+        financials.today.expenses += amount;
+    }
+    if (dateObj.getMonth() === today.getMonth() && dateObj.getFullYear() === today.getFullYear()) {
+        financials.month.expenses += amount;
+    }
+});
+
+function openAddExpenseModal() {
+    document.getElementById('addExpenseForm').reset();
+    document.getElementById('addExpenseModal').classList.remove('hidden');
+}
+
+function closeAddExpenseModal() {
+    document.getElementById('addExpenseModal').classList.add('hidden');
+}
+
+async function handleAddExpense(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnConfirmExpense');
+    btn.innerText = "Saving...";
+    btn.disabled = true;
+    
+    const expPayload = {
+      desc: document.getElementById('expDesc').value,
+      category: document.getElementById('expCategory').value,
+      amount: parseFloat(document.getElementById('expAmount').value),
+      date: new Date().toLocaleString()
+    };
+
+    try {
+      await api('addExpenseAPI', expPayload);
+      showToast('Expense recorded successfully!');
+      closeAddExpenseModal();
+      await loadGlobalData();
+    } catch (error) {
+      showToast('Error recording expense: ' + error.message, 'error');
+    } finally {
+      btn.innerText = "Save Expense";
+      btn.disabled = false;
+    }
+}
+
+function renderExpenseTable() {
+    let todayExp = 0;
+    let monthExp = 0;
+    let todayDate = new Date();
+
+    let html = '<table class="table-compact"><thead><tr><th>ID</th><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Logged By</th><th>Action</th></tr></thead><tbody>';
+    
+    if(expenseData.length === 0) {
+      html += '<tr><td colspan="7" style="text-align:center;">No expenses recorded yet.</td></tr>';
+    }
+
+    // Render backwards to show newest first
+    [...expenseData].reverse().forEach(row => {
+        let d = new Date(row[1]);
+        let amt = parseFloat(row[4]) || 0;
+        
+        if(d.toDateString() === todayDate.toDateString()) todayExp += amt;
+        if(d.getMonth() === todayDate.getMonth() && d.getFullYear() === todayDate.getFullYear()) monthExp += amt;
+
+        html += `<tr>
+            <td><small style="color:var(--text-muted)">${row[0]}</small></td>
+            <td>${row[1]}</td>
+            <td><strong>${row[2]}</strong></td>
+            <td><span class="status-badge" style="background: #e2e8f0; color: #475569;">${row[3]}</span></td>
+            <td style="color: var(--danger); font-weight: bold;">₱${amt.toFixed(2)}</td>
+            <td><small>${row[5]}</small></td>
+            <td><button onclick="handleDeleteExpense('${row[0]}')" class="btn btn-sm btn-danger">Void</button></td>
+        </tr>`;
+    });
+    
+    html += '</tbody></table>';
+    
+    document.getElementById('expenseTableContainer').innerHTML = html;
+    document.getElementById('expToday').innerText = `₱${todayExp.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    document.getElementById('expMonth').innerText = `₱${monthExp.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+}
+
+async function handleDeleteExpense(id) {
+    if(!confirm("Are you sure you want to void this expense?")) return;
+    try {
+        await api('deleteExpenseAPI', { expId: id });
+        showToast("Expense voided successfully.");
+        await loadGlobalData();
+    } catch (e) {
+        showToast(e.message, "error");
+    }
+}
+
+// Calculate TRUE Net Profit (Revenue - COGS - Operational Expenses)
+let trueProfitToday = financials.today.profit - financials.today.expenses;
+let trueProfitMonth = financials.month.profit - financials.month.expenses;
+let trueProfitAllTime = financials.allTime.profit - financials.allTime.expenses;
 
     let last7Days = [...Array(7)].map((_, i) => {
       let d = new Date();
