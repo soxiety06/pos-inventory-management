@@ -1,442 +1,427 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="POS & Inventory">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="application-name" content="POS & Inventory">
 
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="POS & Inventory">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#4f46e5">
-    <meta name="application-name" content="POS & Inventory">
-    
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="icon" type="image/png" href="icon-192.png">
-    <link rel="stylesheet" href="style.css">
-    
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <title>POS and Inventory Management Tool</title>
-  </head>
-  <body>
-    <datalist id="categoryList"></datalist>
-    <div id="loader-initial" class="fish-loader">
-      <div class="swimming-fish">📦</div>
-      <div class="water-text">POS System is Loading...</div>
-    </div>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
 
-    <div id="loader-login" class="fish-loader hidden" style="background: var(--bg-color); z-index: 99999;">
-      <div class="card" style="text-align: center; max-width: 400px; width: 90%; padding: 40px 30px;">
-        <h2 style="color: var(--primary); margin-top: 10px;">POS & Inventory Tool</h2>
-        <p style="color: var(--text-muted); margin-bottom: 25px;">Please log in to continue.</p>
-        
-        <div class="input-group" style="text-align: left;">
-          <label>Username</label>
-          <input type="text" id="loginUsername" placeholder="Enter your username" required>
-        </div>
-        <div class="input-group" style="text-align: left; margin-bottom: 20px;">
-          <label>Password</label>
-          <input type="password" id="loginPassword" placeholder="••••••••" required>
-        </div>
-        
-        <button class="btn btn-primary btn-large" onclick="handleLogin()">Login</button>
-        <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">
-          Testing the app? <a href="#" onclick="toggleAuthMode('register')" style="color: var(--primary); font-weight: bold; text-decoration: none;">Register here</a>
-        </p>
-      </div>
-    </div>
-
-    <div id="loader-register" class="fish-loader hidden" style="background: var(--bg-color); z-index: 99999;">
-      <div class="card" style="text-align: center; max-width: 400px; width: 90%; padding: 40px 30px;">
-        <h2 style="color: var(--primary); margin-top: 10px;">Create Account</h2>
-        <p style="color: var(--text-muted); margin-bottom: 25px;">Register to access the POS system.</p>
-        
-        <div class="input-group" style="text-align: left;">
-          <label>Full Name</label>
-          <input type="text" id="regName" placeholder="Juan Dela Cruz" required>
-        </div>
-        <div class="input-group" style="text-align: left;">
-          <label>Username</label>
-          <input type="text" id="regUsername" placeholder="Choose a username" required>
-        </div>
-        <div class="input-group" style="text-align: left; margin-bottom: 20px;">
-          <label>Create Password</label>
-          <input type="password" id="regPassword" placeholder="••••••••" required>
-        </div>
-        
-        <button class="btn btn-success btn-large" onclick="handleRegister()">Register Account</button>
-        <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">
-          Already registered? <a href="#" onclick="toggleAuthMode('login')" style="color: var(--primary); font-weight: bold; text-decoration: none;">Login here</a>
-        </p>
-      </div>
-    </div>
-
-   <div id="addModal" class="modal-overlay hidden">
-  <div class="modal-content card">
-    <h3>Add New Product</h3>
-    <form id="addProductForm" onsubmit="handleAddProduct(event)">
-      <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="btnConfirmAdd">Confirm</button>
-      </div>
-    </form>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <title>POS and Inventory Management Tool</title>
+</head>
+<body>
+  <datalist id="categoryList"></datalist>
+  
+  <div id="loader-initial" class="fish-loader">
+    <div class="swimming-fish">📦</div>
+    <div class="water-text">POS System is Loading...</div>
   </div>
-</div>
 
-<div id="addExpenseModal" class="modal-overlay hidden">
-  <div class="modal-content card">
-    <h3>Log New Expense</h3>
-    <form id="addExpenseForm" onsubmit="handleAddExpense(event)">
-      <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" onclick="closeAddExpenseModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="btnConfirmExpense">Save Expense</button>
+  <div id="loader-login" class="fish-loader hidden" style="background: var(--bg-color); z-index: 99999;">
+    <div class="card" style="text-align: center; max-width: 400px; width: 90%; padding: 40px 30px;">
+      <h2 style="color: var(--primary); margin-top: 10px;">POS & Inventory Tool</h2>
+      <p style="color: var(--text-muted); margin-bottom: 25px;">Please log in to continue.</p>
+
+      <div class="input-group" style="text-align: left;">
+        <label>Username</label>
+        <input type="text" id="loginUsername" placeholder="Enter your username" required>
       </div>
-    </form>
+      <div class="input-group" style="text-align: left; margin-bottom: 20px;">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" required>
+      </div>
+
+      <button class="btn btn-primary btn-large" onclick="handleLogin()">Login</button>
+      <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">
+        Testing the app? <a href="#" onclick="toggleAuthMode('register')" style="color: var(--primary); font-weight: bold; text-decoration: none;">Register here</a>
+      </p>
+    </div>
   </div>
-</div>
-          
-          <div class="form-row">
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Cost Price (₱)</label>
-                <input type="number" id="itemCost" step="0.01" required>
-            </div>
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Selling Price (₱)</label>
-                <input type="number" id="itemPrice" step="0.01" required>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Initial Stock</label>
-                <input type="number" id="itemStock" required>
-            </div>
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Low Stock Threshold</label>
-                <input type="number" id="itemThreshold" required>
-            </div>
-          </div>
-          <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="btnConfirmAdd">Confirm</button>
-          </div>
-        </form>
-      </div>
-    </div>
-    
-    <div id="loader-expired" class="fish-loader hidden" style="background: var(--bg-color); z-index: 999999;">
-      <div class="card" style="text-align: center; max-width: 450px; width: 90%; padding: 40px 30px; border-top: 4px solid var(--danger);">
-        <h2 style="color: var(--danger); margin-top: 10px;">Trial Expired</h2>
-        <p style="color: var(--text-muted); margin-bottom: 15px;">Your 2-day testing period for the POS & Inventory Management Tool has concluded.</p>
-        <p style="font-size: 1rem; margin-bottom: 25px;">To continue using the system, please contact the developer to arrange permanent access.</p>
-        <a href="mailto:admin@example.com" class="btn btn-primary btn-large" style="display: block; text-decoration: none; padding: 15px;">Contact Admin</a>
-        <button class="btn btn-secondary" style="margin-top: 15px; width: 100%;" onclick="logout()">Log Out</button>
-      </div>
-    </div>
 
-    <div id="editModal" class="modal-overlay hidden">
-      <div class="modal-content card">
-        <h3>Edit Product</h3>
-        <form id="editProductForm" onsubmit="submitEditProduct(event)">
-          <input type="hidden" id="editItemId">
-          <div class="form-row">
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Item Name</label>
-                <input type="text" id="editItemName" required>
-            </div>
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Category</label>
-                <input type="text" id="editItemCategory" required list="categoryList">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Cost Price (₱)</label>
-                <input type="number" id="editItemCost" step="0.01" required>
-            </div>
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Selling Price (₱)</label>
-                <input type="number" id="editItemPrice" step="0.01" required>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Stock</label>
-                <input type="number" id="editItemStock" required>
-            </div>
-            <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                <label>Threshold</label>
-                <input type="number" id="editItemThreshold" required>
-            </div>
-          </div>
-          <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="btnSaveEdit">Save Changes</button>
-          </div>
-        </form>
-      </div>
-    </div>
+  <div id="loader-register" class="fish-loader hidden" style="background: var(--bg-color); z-index: 99999;">
+    <div class="card" style="text-align: center; max-width: 400px; width: 90%; padding: 40px 30px;">
+      <h2 style="color: var(--primary); margin-top: 10px;">Create Account</h2>
+      <p style="color: var(--text-muted); margin-bottom: 25px;">Register to access the POS system.</p>
 
-    <div id="recentSalesModal" class="modal-overlay hidden">
-      <div class="modal-content card" style="max-width: 800px; width: 95%;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-          <h3 style="margin: 0;">Today's Transactions</h3>
-          <button class="btn btn-sm btn-danger" onclick="closeRecentSalesModal()" style="border-radius: 50%; padding: 5px 10px;">X</button>
+      <div class="input-group" style="text-align: left;">
+        <label>Full Name</label>
+        <input type="text" id="regName" placeholder="Juan Dela Cruz" required>
+      </div>
+      <div class="input-group" style="text-align: left;">
+        <label>Username</label>
+        <input type="text" id="regUsername" placeholder="Choose a username" required>
+      </div>
+      <div class="input-group" style="text-align: left; margin-bottom: 20px;">
+        <label>Create Password</label>
+        <input type="password" id="regPassword" placeholder="••••••••" required>
+      </div>
+
+      <button class="btn btn-success btn-large" onclick="handleRegister()">Register Account</button>
+      <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">
+        Already registered? <a href="#" onclick="toggleAuthMode('login')" style="color: var(--primary); font-weight: bold; text-decoration: none;">Login here</a>
+      </p>
+    </div>
+  </div>
+
+  <div id="addModal" class="modal-overlay hidden">
+    <div class="modal-content card">
+      <h3>Add New Product</h3>
+      <form id="addProductForm" onsubmit="handleAddProduct(event)">
+        <div class="form-row">
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Cost Price (₱)</label>
+            <input type="number" id="itemCost" step="0.01" required>
+          </div>
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Selling Price (₱)</label>
+            <input type="number" id="itemPrice" step="0.01" required>
+          </div>
         </div>
-        <div id="recentSalesContainer" class="scrollable-table-wrapper" style="max-height: 60vh;">
-          Loading sales data...
+        <div class="form-row">
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Initial Stock</label>
+            <input type="number" id="itemStock" required>
+          </div>
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Low Stock Threshold</label>
+            <input type="number" id="itemThreshold" required>
+          </div>
         </div>
         <div class="modal-actions">
-          <button type="button" class="btn btn-secondary" onclick="closeRecentSalesModal()">Close</button>
+          <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnConfirmAdd">Confirm</button>
         </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="addExpenseModal" class="modal-overlay hidden">
+    <div class="modal-content card">
+      <h3>Log New Expense</h3>
+      <form id="addExpenseForm" onsubmit="handleAddExpense(event)">
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeAddExpenseModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnConfirmExpense">Save Expense</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="loader-expired" class="fish-loader hidden" style="background: var(--bg-color); z-index: 999999;">
+    <div class="card" style="text-align: center; max-width: 450px; width: 90%; padding: 40px 30px; border-top: 4px solid var(--danger);">
+      <h2 style="color: var(--danger); margin-top: 10px;">Trial Expired</h2>
+      <p style="color: var(--text-muted); margin-bottom: 15px;">Your 2-day testing period for the POS & Inventory Management Tool has concluded.</p>
+      <p style="font-size: 1rem; margin-bottom: 25px;">To continue using the system, please contact the developer to arrange permanent access.</p>
+      <a href="mailto:admin@example.com" class="btn btn-primary btn-large" style="display: block; text-decoration: none; padding: 15px;">Contact Admin</a>
+      <button class="btn btn-secondary" style="margin-top: 15px; width: 100%;" onclick="logout()">Log Out</button>
+    </div>
+  </div>
+
+  <div id="editModal" class="modal-overlay hidden">
+    <div class="modal-content card">
+      <h3>Edit Product</h3>
+      <form id="editProductForm" onsubmit="submitEditProduct(event)">
+        <input type="hidden" id="editItemId">
+        <div class="form-row">
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Item Name</label>
+            <input type="text" id="editItemName" required>
+          </div>
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Category</label>
+            <input type="text" id="editItemCategory" required list="categoryList">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Cost Price (₱)</label>
+            <input type="number" id="editItemCost" step="0.01" required>
+          </div>
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Selling Price (₱)</label>
+            <input type="number" id="editItemPrice" step="0.01" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Stock</label>
+            <input type="number" id="editItemStock" required>
+          </div>
+          <div class="input-group" style="flex: 1; margin-bottom: 0;">
+            <label>Threshold</label>
+            <input type="number" id="editItemThreshold" required>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveEdit">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="recentSalesModal" class="modal-overlay hidden">
+    <div class="modal-content card" style="max-width: 800px; width: 95%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="margin: 0;">Today's Transactions</h3>
+        <button class="btn btn-sm btn-danger" onclick="closeRecentSalesModal()" style="border-radius: 50%; padding: 5px 10px;">X</button>
+      </div>
+      <div id="recentSalesContainer" class="scrollable-table-wrapper" style="max-height: 60vh;">
+        Loading sales data...
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeRecentSalesModal()">Close</button>
       </div>
     </div>
+  </div>
 
-    <div id="toast-container" class="toast-container"></div>
+  <div id="toast-container" class="toast-container"></div>
 
-    <div class="pos-container">
-      <header>
-        <div class="header-title">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <img src="icon-192.png" alt="POS Logo" class="app-logo">
-            <h1 style="margin: 0;">POS and Inventory Management Tool</h1>
-          </div>
-          <div style="display: flex; align-items: center; gap: 15px;">
-            <span class="status-badge status-good" id="connection-status">🟢 Connected</span>
-            <button class="btn btn-sm btn-danger" onclick="logout()">Logout</button>
-          </div>
+  <div class="pos-container">
+    <header>
+      <div class="header-title">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img src="icon-192.png" alt="POS Logo" class="app-logo">
+          <h1 style="margin: 0;">POS and Inventory Management Tool</h1>
         </div>
-        <nav class="tabs">
-          <button onclick="switchTab('pos')" id="tab-pos" class="active">POS Terminal</button>
-          <button onclick="switchTab('dashboard')" id="tab-dashboard">Dashboard</button>
-          <button onclick="switchTab('inventory')" id="tab-inventory">Inventory</button>
-          <button onclick="switchTab('expenses')" id="tab-expenses">Expenses</button>
-          <button onclick="switchTab('history')" id="tab-history">History</button> 
-        </nav>
-      </header>
-
-      <nav class="bottom-nav" id="mobile-nav">
-        <button onclick="switchTab('pos')" id="mob-pos" class="active">
-          <span class="icon">🛒</span><span>POS</span>
-        </button>
-        <button onclick="switchTab('dashboard')" id="mob-dashboard">
-          <span class="icon">📊</span><span>Dash</span>
-        </button>
-        <button onclick="switchTab('inventory')" id="mob-inventory">
-          <span class="icon">📦</span><span>Stock</span>
-        </button>
-        <button onclick="switchTab('expenses')" id="mob-expenses">
-        <span class="icon">💸</span><span>Expenses</span>
-        </button>
-        <button onclick="switchTab('history')" id="mob-history">
-          <span class="icon">🕒</span><span>Hist</span>
-        </button>
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <span class="status-badge status-good" id="connection-status">🟢 Connected</span>
+          <button class="btn btn-sm btn-danger" onclick="logout()">Logout</button>
+        </div>
+      </div>
+      <nav class="tabs">
+        <button onclick="switchTab('pos')" id="tab-pos" class="active">POS Terminal</button>
+        <button onclick="switchTab('dashboard')" id="tab-dashboard">Dashboard</button>
+        <button onclick="switchTab('inventory')" id="tab-inventory">Inventory</button>
+        <button onclick="switchTab('expenses')" id="tab-expenses">Expenses</button>
+        <button onclick="switchTab('history')" id="tab-history">History</button> 
       </nav>
-      
-      <main id="app-content">
-        
+    </header>
+
+    <nav class="bottom-nav" id="mobile-nav">
+      <button onclick="switchTab('pos')" id="mob-pos" class="active">
+        <span class="icon">🛒</span><span>POS</span>
+      </button>
+      <button onclick="switchTab('dashboard')" id="mob-dashboard">
+        <span class="icon">📊</span><span>Dash</span>
+      </button>
+      <button onclick="switchTab('inventory')" id="mob-inventory">
+        <span class="icon">📦</span><span>Stock</span>
+      </button>
+      <button onclick="switchTab('expenses')" id="mob-expenses">
+        <span class="icon">💸</span><span>Expenses</span>
+      </button>
+      <button onclick="switchTab('history')" id="mob-history">
+        <span class="icon">🕒</span><span>Hist</span>
+      </button>
+    </nav>
+
+    <main id="app-content">
       <div id="pos" class="tab-content active">
-          <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
-            <div>
-              <h2 style="margin-bottom: 4px;">Point of Sale</h2>
-              <p style="font-size: 0.9rem; margin: 0;">Process customer orders securely.</p>
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+          <div>
+            <h2 style="margin-bottom: 4px;">Point of Sale</h2>
+            <p style="font-size: 0.9rem; margin: 0;">Process customer orders securely.</p>
+          </div>
+          <button class="btn btn-secondary" onclick="openRecentSalesModal()" style="display: flex; align-items: center; gap: 6px; font-weight: 600; background: white; border: 1px solid #cbd5e1; box-shadow: var(--shadow-sm);">
+            <span style="font-size: 1.1rem;">🕒</span> Recent Transactions
+          </button>
+        </div>
+
+        <div class="pos-advanced-container">
+          <div class="pos-main-pane">
+            <label style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Find Item & Add to Cart</label>
+            <div class="modern-search-bar">
+              <div class="custom-dropdown-container" style="flex: 1;">
+                <input type="text" id="posItemSearch" placeholder="Search by name or scan barcode..." onfocus="toggleDropdown(true)" onkeyup="filterPOSItems()" autocomplete="off">
+                <div id="posDropdown" class="custom-dropdown-list hidden" style="width: calc(100% + 150px);"></div>
+              </div>
+              <input type="number" id="posQty" class="qty-input" value="1" min="1" required title="Quantity">
+              <button class="btn btn-primary" onclick="addToCart()">Add</button>
             </div>
-            <button class="btn btn-secondary" onclick="openRecentSalesModal()" style="display: flex; align-items: center; gap: 6px; font-weight: 600; background: white; border: 1px solid #cbd5e1; box-shadow: var(--shadow-sm);">
-              <span style="font-size: 1.1rem;">🕒</span> Recent Transactions
+
+            <div id="cartContainer" style="margin-top: 24px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; flex-grow: 1; display: flex; flex-direction: column;">
+              <div style="max-height: 400px; overflow-y: auto;">
+                <table class="table-compact" style="margin: 0; width: 100%;">
+                  <thead style="background: #f1f5f9; position: sticky; top: 0; z-index: 5;">
+                    <tr>
+                      <th style="padding: 12px 16px;">Item</th>
+                      <th style="padding: 12px 16px; text-align: center;">Qty</th>
+                      <th style="padding: 12px 16px; text-align: right;">Subtotal</th>
+                      <th style="padding: 12px 16px; text-align: center; width: 50px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="cartBody">
+                    <tr><td colspan="4" style="text-align:center; color: #94a3b8; padding: 40px 15px; font-style: italic;">Your cart is currently empty</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="pos-checkout-pane">
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+              <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 10px;">Apply Discount</label>
+              <div style="display: flex; gap: 10px;">
+                <select id="posDiscountType" onchange="updatePOSCalculation()" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; background: #f8fafc;">
+                  <option value="None">None</option>
+                  <option value="Percentage">% Off</option>
+                  <option value="Exact">₱ Off</option>
+                </select>
+                <input type="number" id="posDiscountValue" placeholder="0" min="0" step="0.01" oninput="updatePOSCalculation()" disabled style="flex: 1; padding: 10px; text-align: center; font-weight: bold;">
+              </div>
+            </div>
+
+            <div class="modern-totals-box">
+              <div class="tot-row">
+                <span>Subtotal</span>
+                <strong>₱<span id="posSubtotal">0.00</span></strong>
+              </div>
+              <div class="tot-row" style="color: var(--danger);">
+                <span>Discount</span>
+                <strong>- ₱<span id="posDiscountDisplay">0.00</span></strong>
+              </div>
+              <div class="tot-row grand">
+                <span>Total Due</span>
+                <span>₱<span id="posTotal">0.00</span></span>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <label style="font-size: 0.85rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">Cash Tendered (₱)</label>
+              <input type="number" class="giant-amount-input" id="posPaid" placeholder="0.00" step="0.01" oninput="updatePOSCalculation()" required>
+            </div>
+
+            <div class="change-box" style="margin-bottom: 24px; text-align: center; padding: 12px; border-radius: 8px; background: #ecfdf5; border: 1px solid #a7f3d0;">
+              <span style="font-size: 0.9rem; color: #065f46; display: block; margin-bottom: 4px;">Customer Change</span>
+              <strong style="font-size: 1.8rem; color: #059669;">₱<span id="posChange">0.00</span></strong>
+            </div>
+
+            <button onclick="processSale()" class="btn btn-success btn-large" id="btnCheckout" disabled style="padding: 20px; font-size: 1.2rem; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);">
+              Process Checkout
             </button>
           </div>
-          
-          <div class="pos-advanced-container">
-            <div class="pos-main-pane">
-              <label style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Find Item & Add to Cart</label>
-              
-              <div class="modern-search-bar">
-                <div class="custom-dropdown-container" style="flex: 1;">
-                  <input type="text" id="posItemSearch" placeholder="Search by name or scan barcode..." onfocus="toggleDropdown(true)" onkeyup="filterPOSItems()" autocomplete="off">
-                  <div id="posDropdown" class="custom-dropdown-list hidden" style="width: calc(100% + 150px);"></div>
-                </div>
-                <input type="number" id="posQty" class="qty-input" value="1" min="1" required title="Quantity">
-                <button class="btn btn-primary" onclick="addToCart()">Add</button>
-              </div>
+        </div>
+      </div>
 
-              <div id="cartContainer" style="margin-top: 24px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; flex-grow: 1; display: flex; flex-direction: column;">
-                <div style="max-height: 400px; overflow-y: auto;">
-                  <table class="table-compact" style="margin: 0; width: 100%;">
-                    <thead style="background: #f1f5f9; position: sticky; top: 0; z-index: 5;">
-                      <tr>
-                        <th style="padding: 12px 16px;">Item</th>
-                        <th style="padding: 12px 16px; text-align: center;">Qty</th>
-                        <th style="padding: 12px 16px; text-align: right;">Subtotal</th>
-                        <th style="padding: 12px 16px; text-align: center; width: 50px;"></th>
-                      </tr>
-                    </thead>
-                    <tbody id="cartBody">
-                      <tr><td colspan="4" style="text-align:center; color: #94a3b8; padding: 40px 15px; font-style: italic;">Your cart is currently empty</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+      <div id="dashboard" class="tab-content">
+        <div class="section-header">
+          <h2>Analytics Dashboard</h2>
+          <p>Real-time system overview and financial reporting</p>
+        </div>
 
-            <div class="pos-checkout-pane">
-              <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-                <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 10px;">Apply Discount</label>
-                <div style="display: flex; gap: 10px;">
-                  <select id="posDiscountType" onchange="updatePOSCalculation()" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; background: #f8fafc;">
-                    <option value="None">None</option>
-                    <option value="Percentage">% Off</option>
-                    <option value="Exact">₱ Off</option>
-                  </select>
-                  <input type="number" id="posDiscountValue" placeholder="0" min="0" step="0.01" oninput="updatePOSCalculation()" disabled style="flex: 1; padding: 10px; text-align: center; font-weight: bold;">
-                </div>
-              </div>
+        <div class="kpi-grid" id="kpi-container">Loading metrics...</div>
 
-              <div class="modern-totals-box">
-                <div class="tot-row">
-                  <span>Subtotal</span>
-                  <strong>₱<span id="posSubtotal">0.00</span></strong>
-                </div>
-                <div class="tot-row" style="color: var(--danger);">
-                  <span>Discount</span>
-                  <strong>- ₱<span id="posDiscountDisplay">0.00</span></strong>
-                </div>
-                <div class="tot-row grand">
-                  <span>Total Due</span>
-                  <span>₱<span id="posTotal">0.00</span></span>
-                </div>
-              </div>
-
-              <div style="margin-bottom: 20px;">
-                <label style="font-size: 0.85rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">Cash Tendered (₱)</label>
-                <input type="number" class="giant-amount-input" id="posPaid" placeholder="0.00" step="0.01" oninput="updatePOSCalculation()" required>
-              </div>
-
-              <div class="change-box" style="margin-bottom: 24px; text-align: center; padding: 12px; border-radius: 8px; background: #ecfdf5; border: 1px solid #a7f3d0;">
-                <span style="font-size: 0.9rem; color: #065f46; display: block; margin-bottom: 4px;">Customer Change</span>
-                <strong style="font-size: 1.8rem; color: #059669;">₱<span id="posChange">0.00</span></strong>
-              </div>
-              
-              <button onclick="processSale()" class="btn btn-success btn-large" id="btnCheckout" disabled style="padding: 20px; font-size: 1.2rem; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);">
-                Process Checkout
-              </button>
-            </div>
+        <div class="card" style="margin-top: 20px;">
+          <h3>Financial Summary Report</h3>
+          <div class="table-container">
+            <table class="table-compact" style="width: 100%;">
+              <thead>
+                <tr>
+                  <th>Period</th>
+                  <th>Total Sales (Revenue)</th>
+                  <th>Total Cost (COGS)</th>
+                  <th>Net Profit</th>
+                  <th>Profit Margin</th>
+                </tr>
+              </thead>
+              <tbody id="financialReportBody">
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <div id="dashboard" class="tab-content">
-          <div class="section-header">
-            <h2>Analytics Dashboard</h2>
-            <p>Real-time system overview and financial reporting</p>
+        <div class="chart-grid">
+          <div class="card chart-container">
+            <h3>Revenue Trends (Last 7 Days)</h3>
+            <div id="chart_trends" style="width: 100%; height: 300px;"></div>
           </div>
-          
-          <div class="kpi-grid" id="kpi-container">Loading metrics...</div>
-          
-          <div class="card" style="margin-top: 20px;">
-            <h3>Financial Summary Report</h3>
-            <div class="table-container">
-              <table class="table-compact" style="width: 100%;">
-                <thead>
-                  <tr>
-                    <th>Period</th>
-                    <th>Total Sales (Revenue)</th>
-                    <th>Total Cost (COGS)</th>
-                    <th>Net Profit</th>
-                    <th>Profit Margin</th>
-                  </tr>
-                </thead>
-                <tbody id="financialReportBody">
-                  </tbody>
-              </table>
-            </div>
+          <div class="card chart-container">
+            <h3>Inventory by Category</h3>
+            <div id="chart_category" style="width: 100%; height: 300px;"></div>
           </div>
-          
-          <div class="chart-grid">
-            <div class="card chart-container">
-              <h3>Revenue Trends (Last 7 Days)</h3>
-              <div id="chart_trends" style="width: 100%; height: 300px;"></div>
-            </div>
-            <div class="card chart-container">
-              <h3>Inventory by Category</h3>
-              <div id="chart_category" style="width: 100%; height: 300px;"></div>
-            </div>
+        </div>
+      </div>
+
+      <div id="inventory" class="tab-content">
+        <div class="section-header">
+          <h2>Inventory Management</h2>
+        </div>
+
+        <div class="kpi-grid" style="margin-bottom: 20px;">
+          <div class="kpi-card">
+            <div class="kpi-title">Total Items in Stock</div>
+            <div class="kpi-value" id="invTotalItems">0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Total Cost Value</div>
+            <div class="kpi-value" style="color: var(--danger)" id="invTotalCost">₱0.00</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Total Retail Value</div>
+            <div class="kpi-value" style="color: var(--success)" id="invTotalRetail">₱0.00</div>
           </div>
         </div>
 
-       <div id="inventory" class="tab-content">
-          <div class="section-header">
-            <h2>Inventory Management</h2>
-          </div>
-
-          <div class="kpi-grid" style="margin-bottom: 20px;">
-            <div class="kpi-card">
-              <div class="kpi-title">Total Items in Stock</div>
-              <div class="kpi-value" id="invTotalItems">0</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-title">Total Cost Value</div>
-              <div class="kpi-value" style="color: var(--danger)" id="invTotalCost">₱0.00</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-title">Total Retail Value</div>
-              <div class="kpi-value" style="color: var(--success)" id="invTotalRetail">₱0.00</div>
+        <div class="card table-container">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <h3 style="margin: 0;">Current Inventory</h3>
+            <div style="display: flex; gap: 10px; align-items: center; flex: 1; justify-content: flex-end;">
+              <input type="text" id="inventorySearch" placeholder="Search by ID, Name, or Category..." onkeyup="filterInventoryTable()" style="max-width: 300px; padding: 10px; margin: 0;">
+              <button class="btn btn-primary" onclick="openAddModal()" style="white-space: nowrap;">+ Add Product</button>
             </div>
           </div>
+          <div id="inventoryTableContainer" class="scrollable-table-wrapper"></div>
+        </div>
+      </div>
 
-          <div class="card table-container">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-              <h3 style="margin: 0;">Current Inventory</h3>
-              
-              <div style="display: flex; gap: 10px; align-items: center; flex: 1; justify-content: flex-end;">
-                <input type="text" id="inventorySearch" placeholder="Search by ID, Name, or Category..." onkeyup="filterInventoryTable()" style="max-width: 300px; padding: 10px; margin: 0;">
-                <button class="btn btn-primary" onclick="openAddModal()" style="white-space: nowrap;">+ Add Product</button>
-              </div>
-            </div>
-            
-            <div id="inventoryTableContainer" class="scrollable-table-wrapper"></div>
+      <div id="expenses" class="tab-content">
+        <div class="section-header">
+          <h2>Expense Tracking</h2>
+          <p>Monitor daily and monthly operational costs.</p>
+        </div>
+
+        <div class="kpi-grid" style="margin-bottom: 20px;">
+          <div class="kpi-card">
+            <div class="kpi-title">Today's Expenses</div>
+            <div class="kpi-value" style="color: var(--danger)" id="expToday">₱0.00</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">This Month's Expenses</div>
+            <div class="kpi-value" style="color: var(--danger)" id="expMonth">₱0.00</div>
           </div>
         </div>
 
-        <div id="expenses" class="tab-content">
-  <div class="section-header">
-    <h2>Expense Tracking</h2>
-    <p>Monitor daily and monthly operational costs.</p>
+        <div class="card table-container">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0;">Recent Expenses</h3>
+            <button class="btn btn-primary" onclick="openAddExpenseModal()">+ Add Expense</button>
+          </div>
+          <div id="expenseTableContainer" class="scrollable-table-wrapper"></div>
+        </div>
+      </div>
+
+      <div id="history" class="tab-content">
+        <div class="section-header">
+          <h2>Transaction History</h2>
+          <p>Complete audit log arranged by Year > Month > Day</p>
+        </div>
+        <div class="card">
+          <div id="historyTableContainer"></div>
+        </div>
+      </div>
+    </main>
   </div>
-
-  <div class="kpi-grid" style="margin-bottom: 20px;">
-    <div class="kpi-card">
-      <div class="kpi-title">Today's Expenses</div>
-      <div class="kpi-value" style="color: var(--danger)" id="expToday">₱0.00</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-title">This Month's Expenses</div>
-      <div class="kpi-value" style="color: var(--danger)" id="expMonth">₱0.00</div>
-    </div>
-  </div>
-
-  <div class="card table-container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-      <h3 style="margin: 0;">Recent Expenses</h3>
-      <button class="btn btn-primary" onclick="openAddExpenseModal()">+ Add Expense</button>
-    </div>
-    <div id="expenseTableContainer" class="scrollable-table-wrapper">
-       </div>
-  </div>
-</div>
-        
-
-        <div id="history" class="tab-content">
-          <div class="section-header">
-            <h2>Transaction History</h2>
-            <p>Complete audit log arranged by Year > Month > Day</p>
-          </div>
-          <div class="card">
-            <div id="historyTableContainer">
-              </div>
-          </div>
-        </div>
-      </main>
-    </div>
-    
-    <script src="script.js" defer></script>
-  </body>
+  
+  <script src="script.js" defer></script>
+</body>
 </html>
