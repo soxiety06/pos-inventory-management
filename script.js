@@ -99,19 +99,29 @@ async function checkSession() {
 }
 
 async function handleRegister() {
-  const name = document.getElementById('regName').value;
-  const email = document.getElementById('regEmail').value;
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
   const pass = document.getElementById('regPassword').value;
   
-  if (!name || !email || !pass) return showToast('Please fill all fields', 'error');
+  // 1. Basic validation with a warning pop-up
+  if (!name || !email || !pass) {
+    return Swal.fire({
+      icon: 'warning',
+      title: 'Missing Fields',
+      text: 'Please fill out your Name, Email, and Password.',
+      confirmButtonColor: '#f59e0b'
+    });
+  }
 
+  // 2. Trigger loading animation
   document.getElementById('loader-register').classList.add('hidden');
   document.getElementById('loader-initial').classList.remove('hidden');
   
   try {
-    // Send email to backend
+    // 3. Send payload to backend
     await api('registerUserAPI', { email: email, name: name, password: pass });
     
+    // 4. Success state: Hide loader, show login, clear form
     document.getElementById('loader-initial').classList.add('hidden');
     document.getElementById('loader-login').classList.remove('hidden');
     
@@ -119,11 +129,36 @@ async function handleRegister() {
     document.getElementById('regEmail').value = '';
     document.getElementById('regPassword').value = '';
 
-    showToast('Request submitted! Please wait for Admin approval.', 'success');
+    // 5. Success Pop-up
+    Swal.fire({
+      icon: 'success',
+      title: 'Request Submitted!',
+      text: 'Please wait for Admin approval before logging in.',
+      confirmButtonColor: '#10b981'
+    });
+
   } catch(e) {
+    // 6. Error state: Revert UI
     document.getElementById('loader-initial').classList.add('hidden');
     document.getElementById('loader-register').classList.remove('hidden');
-    showToast(e.message, 'error');
+    
+    // 7. Email Duplicate Pop-up Notification
+    if (e.message.includes("already exists") || e.message.includes("already pending")) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Email Already Registered',
+        text: e.message,
+        confirmButtonColor: '#ef4444'
+      });
+    } else {
+      // Catch-all for other network/server errors
+      Swal.fire({
+        icon: 'error',
+        title: 'Registration Failed',
+        text: e.message,
+        confirmButtonColor: '#ef4444'
+      });
+    }
   }
 }
 
