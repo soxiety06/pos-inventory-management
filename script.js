@@ -20,29 +20,57 @@ if ('serviceWorker' in navigator) {
 }
 
 // ==========================================
-// 2. NATIVE GAS API WRAPPER
+// 2. FETCH API WRAPPER (HEADLESS REST API)
 // ==========================================
-const api = (method, ...args) => {
-  // Show loader for background processes
-  if (method !== 'checkAccessAPI' && method !== 'checkDataSyncAPI' && method !== 'getStartupDataAPI') {
-    let loader = document.getElementById('loader-initial');
-    if (loader) loader.classList.remove('hidden');
-  }
+// 🚨 YOU MUST PASTE YOUR APPS SCRIPT DEPLOYMENT URL HERE 🚨
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwGXsZl_YAd0rDSNVli3dTw-t1t16xOrKfrezrjca2QUPapSuiuGAZnNbu2BHpc8-kx/exec"; 
 
-  return new Promise((resolve, reject) => {
-    google.script.run
-      .withSuccessHandler((res) => {
+const api = async (method, data = {}) => {
+    if (method !== 'loginAPI' && method !== 'registerUserAPI' && method !== 'checkDataSyncAPI' && method !== 'getStartupDataAPI') {
+        let loader = document.getElementById('loader-initial');
+        if (loader) loader.classList.remove('hidden');
+    }
+
+    const storedUsername = sessionStorage.getItem('pos_username') || "";
+    const storedPass = sessionStorage.getItem('pos_pass') || "";
+
+    try {
+        const cacheBusterUrl = GAS_URL + "?t=" + new Date().getTime();
+        
+        // Use text/plain to bypass CORS preflight OPTIONS request
+        const response = await fetch(cacheBusterUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ 
+                action: method, 
+                username: storedUsername, 
+                password: storedPass, 
+                data: data 
+            }),
+            redirect: 'follow'
+        });
+
+        const textResponse = await response.text(); 
+        let result;
+        
+        try {
+            result = JSON.parse(textResponse);
+        } catch (e) {
+            console.error("Server returned HTML:", textResponse);
+            throw new Error("API Connection Blocked. Check GAS Deployment settings.");
+        }
+
         let loader = document.getElementById('loader-initial');
         if (loader) loader.classList.add('hidden');
-        resolve(res);
-      })
-      .withFailureHandler((err) => {
+        
+        if (result.status === 'error') throw new Error(result.message);
+        return result;
+
+    } catch (error) {
         let loader = document.getElementById('loader-initial');
         if (loader) loader.classList.add('hidden');
-        reject(err);
-      })
-      [method](...args);
-  });
+        throw error;
+    }
 };
 
 // ==========================================
