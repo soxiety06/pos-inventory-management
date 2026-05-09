@@ -4,10 +4,12 @@
 let currentUserName = '';
 let inventoryData = [];
 let recentSalesData = [];
+let expenseData = []; // Moved to globals for proper scoping
 let selectedItemRow = null; 
 let posCart = [];
 let currentInvRowCount = 0;
 let currentSalesRowCount = 0;
+let currentExpenseRowCount = 0;
 let syncInterval; 
 
 document.addEventListener("DOMContentLoaded", checkSession);
@@ -57,8 +59,6 @@ async function checkSession() {
       startSilentSync();
       showToast(`Welcome, ${currentUserName}!`);
     } else {
-      // If not approved, they shouldn't be here. 
-      // Ideally, link this to your registration flow if they are a 'new_user'.
       document.getElementById('loader-initial').innerHTML = `<h3 style="color:red; text-align:center; margin-top:20vh;">Access Denied: ${accessRes.message || 'Pending Approval'}</h3>`;
     }
   } catch (e) {
@@ -67,26 +67,17 @@ async function checkSession() {
 }
 
 function logout() {
-  // To "logout" of a native GAS app, you force a refresh or direct to a logged-out Google page.
   window.top.location.href = 'https://accounts.google.com/logout';
 }
 
 // ==========================================
 // 4. GLOBAL DATA & UTILITIES
 // ==========================================
-let expenseData = [];
-let currentExpenseRowCount = 0;
-
-// Update your silent sync interval to track expenses
 function startSilentSync() {
     if (syncInterval) clearInterval(syncInterval);
     syncInterval = setInterval(async () => {
       try {
-        let res = await api('checkDataSyncAPI', { 
-            clientInvCount: currentInvRowCount, 
-            clientSalesCount: currentSalesRowCount,
-            clientExpenseCount: currentExpenseRowCount // Added
-        });
+        let res = await api('checkDataSyncAPI', currentInvRowCount, currentSalesRowCount);
         if (res && res.changed) {
            await loadGlobalData(); 
            showToast("Database synced", "success"); 
@@ -114,13 +105,16 @@ async function loadGlobalData() {
       if (response.status === 'success') {
         inventoryData = response.inventory;
         recentSalesData = response.sales;
+        expenseData = response.expenses || []; // Ensure expenses array exists
         
         currentInvRowCount = inventoryData.length + 1;
         currentSalesRowCount = recentSalesData.length + 1;
+        currentExpenseRowCount = expenseData.length + 1;
         
         renderInventoryTable();
         populateDropdowns();
-        renderDashboard();
+        renderExpenseTable(); // Render expenses before dashboard
+        renderDashboard();    // Safe to render now
         renderRecentSales(); 
         renderHistoryTable();
         
@@ -221,7 +215,7 @@ async function submitEditProduct(e) {
 async function handleDeleteProduct(itemId, itemName) {
     if (!confirm(`Are you sure you want to delete "${itemName}"?`)) return;
     try {
-      await api('deleteProduct', { itemId: itemId });
+      await api('deleteProduct', itemId); // Passed directly as argument per your backend update
       showToast('Product deleted successfully!');
       await loadGlobalData();
     } catch (error) {
@@ -342,7 +336,6 @@ function populateDropdowns() {
         }
     }
     
-    // Safety check prevents the silent crash
     if (catList) {
         catList.innerHTML = Array.from(categories).map(c => `<option value="${c}">`).join('');
     }
@@ -564,143 +557,17 @@ function renderDashboard() {
     let totalStockUnits = 0; 
     let lowStockCount = 0;
     let today = new Date();
+    
     let categoryCounts = {};
     let dailyTrends = {};
 
     let financials = {
-    today: { sales: 0, profit: 0, cost: 0, expenses: 0 },
-    month: { sales: 0, profit: 0, cost: 0, expenses: 0 },
-    allTime: { sales: 0, profit: 0, cost: 0, expenses: 0 }
+        today: { sales: 0, profit: 0, cost: 0, expenses: 0 },
+        month: { sales: 0, profit: 0, cost: 0, expenses: 0 },
+        allTime: { sales: 0, profit: 0, cost: 0, expenses: 0 }
     };
 
-    expenseData.forEach(row => {
-    let dateObj = new Date(row[1]);
-    let amount = parseFloat(row[4]) || 0;
-    
-    financials.allTime.expenses += amount;
-    
-    if (dateObj.toDateString() === today.toDateString()) {
-        financials.today.expenses += amount;
-    }
-    if (dateObj.getMonth() === today.getMonth() && dateObj.getFullYear() === today.getFullYear()) {
-        financials.month.expenses += amount;
-    }
-});
-
-function openAddExpenseModal() {
-    document.getElementById('addExpenseForm').reset();
-    document.getElementById('addExpenseModal').classList.remove('hidden');
-}
-
-function closeAddExpenseModal() {
-    document.getElementById('addExpenseModal').classList.add('hidden');
-}
-
-async function handleAddExpense(e) {
-    e.preventDefault();
-    const btn = document.getElementById('btnConfirmExpense');
-    btn.innerText = "Saving...";
-    btn.disabled = true;
-    
-    const expPayload = {
-      desc: document.getElementById('expDesc').value,
-      category: document.getElementById('expCategory').value,
-      amount: parseFloat(document.getElementById('expAmount').value),
-      date: new Date().toLocaleString()
-    };
-
-    try {
-      await api('addExpenseAPI', expPayload);
-      showToast('Expense recorded successfully!');
-      closeAddExpenseModal();
-      await loadGlobalData();
-    } catch (error) {
-      showToast('Error recording expense: ' + error.message, 'error');
-    } finally {
-      btn.innerText = "Save Expense";
-      btn.disabled = false;
-    }
-}
-
-function renderExpenseTable() {
-    let todayExp = 0;
-    let monthExp = 0;
-    let todayDate = new Date();
-
-    if (google.visualization && typeof google.visualization.arrayToDataTable === 'function') {
-      let catData = [['Category', 'Products']];
-      for (const [cat, count] of Object.entries(categoryCounts)) { catData.push([cat, count]); }
-      if(catData.length > 1) {
-        var dataPie = google.visualization.arrayToDataTable(catData);
-        var optionsPie = { pieHole: 0.5, colors: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'], chartArea: {width: '90%', height: '80%'}, legend: {position: 'right'}, pieSliceBorderColor: 'transparent' };
-        var chartPie = new google.visualization.PieChart(document.getElementById('chart_category'));
-        chartPie.draw(dataPie, optionsPie);
-      }
-
-      let trendData = [['Date', 'Revenue']];
-      last7Days.forEach(day => {
-         let shortDate = day.split(' ').slice(1,3).join(' '); 
-         trendData.push([shortDate, dailyTrends[day]]);
-      });
-      var dataBar = google.visualization.arrayToDataTable(trendData);
-      var optionsBar = {
-        colors: ['#4f46e5'], chartArea: {width: '85%', height: '75%'}, legend: {position: 'none'},
-        vAxis: { format: '₱#,###', gridlines: {color: '#f1f5f9'}, textStyle: {color: '#64748b'} },
-        hAxis: { textStyle: {color: '#64748b', bold: true} }, animation:{ startup: true, duration: 1000, easing: 'out' }
-      };
-      var chartBar = new google.visualization.ColumnChart(document.getElementById('chart_trends'));
-      chartBar.draw(dataBar, optionsBar);
-    }
-}
-
-    let html = '<table class="table-compact"><thead><tr><th>ID</th><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Logged By</th><th>Action</th></tr></thead><tbody>';
-    
-    if(expenseData.length === 0) {
-      html += '<tr><td colspan="7" style="text-align:center;">No expenses recorded yet.</td></tr>';
-    }
-
-    // Render backwards to show newest first
-    [...expenseData].reverse().forEach(row => {
-        let d = new Date(row[1]);
-        let amt = parseFloat(row[4]) || 0;
-        
-        if(d.toDateString() === todayDate.toDateString()) todayExp += amt;
-        if(d.getMonth() === todayDate.getMonth() && d.getFullYear() === todayDate.getFullYear()) monthExp += amt;
-
-        html += `<tr>
-            <td><small style="color:var(--text-muted)">${row[0]}</small></td>
-            <td>${row[1]}</td>
-            <td><strong>${row[2]}</strong></td>
-            <td><span class="status-badge" style="background: #e2e8f0; color: #475569;">${row[3]}</span></td>
-            <td style="color: var(--danger); font-weight: bold;">₱${amt.toFixed(2)}</td>
-            <td><small>${row[5]}</small></td>
-            <td><button onclick="handleDeleteExpense('${row[0]}')" class="btn btn-sm btn-danger">Void</button></td>
-        </tr>`;
-    });
-    
-    html += '</tbody></table>';
-    
-    document.getElementById('expenseTableContainer').innerHTML = html;
-    document.getElementById('expToday').innerText = `₱${todayExp.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-    document.getElementById('expMonth').innerText = `₱${monthExp.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-}
-
-async function handleDeleteExpense(id) {
-    if(!confirm("Are you sure you want to void this expense?")) return;
-    try {
-        await api('deleteExpenseAPI', { expId: id });
-        showToast("Expense voided successfully.");
-        await loadGlobalData();
-    } catch (e) {
-        showToast(e.message, "error");
-    }
-}
-
-// Calculate TRUE Net Profit (Revenue - COGS - Operational Expenses)
-let trueProfitToday = financials.today.profit - financials.today.expenses;
-let trueProfitMonth = financials.month.profit - financials.month.expenses;
-let trueProfitAllTime = financials.allTime.profit - financials.allTime.expenses;
-
+    // Initialize daily trends (Last 7 days)
     let last7Days = [...Array(7)].map((_, i) => {
       let d = new Date();
       d.setDate(d.getDate() - i);
@@ -709,6 +576,22 @@ let trueProfitAllTime = financials.allTime.profit - financials.allTime.expenses;
     
     last7Days.forEach(day => dailyTrends[day] = 0);
 
+    // Process Expenses
+    expenseData.forEach(row => {
+        let dateObj = new Date(row[1]);
+        let amount = parseFloat(row[4]) || 0;
+        
+        financials.allTime.expenses += amount;
+        
+        if (dateObj.toDateString() === today.toDateString()) {
+            financials.today.expenses += amount;
+        }
+        if (dateObj.getMonth() === today.getMonth() && dateObj.getFullYear() === today.getFullYear()) {
+            financials.month.expenses += amount;
+        }
+    });
+
+    // Process Inventory
     inventoryData.forEach(row => {
       let stock = parseInt(row[5]) || 0;
       let threshold = parseInt(row[6]) || 0;
@@ -719,6 +602,7 @@ let trueProfitAllTime = financials.allTime.profit - financials.allTime.expenses;
       categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
     });
 
+    // Process Sales
     recentSalesData.forEach(row => {
       if (row[9] === 'Voided') return; 
       
@@ -747,15 +631,21 @@ let trueProfitAllTime = financials.allTime.profit - financials.allTime.expenses;
       if (dailyTrends[dateString] !== undefined) dailyTrends[dateString] += totalSales;
     });
 
+    // Calculate TRUE Net Profit (Revenue - COGS - Operational Expenses)
+    let trueProfitToday = financials.today.profit - financials.today.expenses;
+    let trueProfitMonth = financials.month.profit - financials.month.expenses;
+    let trueProfitAllTime = financials.allTime.profit - financials.allTime.expenses;
+
+    // Output to UI
+    const formatCurrency = (val) => '₱' + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    const calcMargin = (profit, sales) => sales > 0 ? ((profit / sales) * 100).toFixed(1) + '%' : '0.0%';
+
     document.getElementById('kpi-container').innerHTML = `
-      <div class="kpi-card"><div class="kpi-title">Today's Revenue</div><div class="kpi-value" style="color: var(--success)">₱${financials.today.sales.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div></div>
-      <div class="kpi-card"><div class="kpi-title">Monthly Revenue</div><div class="kpi-value">₱${financials.month.sales.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div></div>
+      <div class="kpi-card"><div class="kpi-title">Today's Revenue</div><div class="kpi-value" style="color: var(--success)">${formatCurrency(financials.today.sales)}</div></div>
+      <div class="kpi-card"><div class="kpi-title">Monthly Revenue</div><div class="kpi-value">${formatCurrency(financials.month.sales)}</div></div>
       <div class="kpi-card"><div class="kpi-title">Items in Stock</div><div class="kpi-value">${totalStockUnits}</div></div>
       <div class="kpi-card ${lowStockCount > 0 ? 'alert' : ''}"><div class="kpi-title">Low Stock Alerts</div><div class="kpi-value">${lowStockCount}</div></div>
     `;
-
-    const formatCurrency = (val) => '₱' + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    const calcMargin = (profit, sales) => sales > 0 ? ((profit / sales) * 100).toFixed(1) + '%' : '0.0%';
 
     let reportBody = document.getElementById('financialReportBody');
     if (reportBody) {
@@ -764,28 +654,144 @@ let trueProfitAllTime = financials.allTime.profit - financials.allTime.expenses;
           <td><strong>Today</strong></td>
           <td>${formatCurrency(financials.today.sales)}</td>
           <td style="color: var(--danger)">${formatCurrency(financials.today.cost)}</td>
-          <td style="color: var(--success)"><strong>${formatCurrency(financials.today.profit)}</strong></td>
-          <td><span class="status-badge" style="background: #e0e7ff; color: #3730a3;">${calcMargin(financials.today.profit, financials.today.sales)}</span></td>
+          <td style="color: ${trueProfitToday >= 0 ? 'var(--success)' : 'var(--danger)'}"><strong>${formatCurrency(trueProfitToday)}</strong></td>
+          <td><span class="status-badge" style="background: #e0e7ff; color: #3730a3;">${calcMargin(trueProfitToday, financials.today.sales)}</span></td>
         </tr>
         <tr>
           <td><strong>This Month</strong></td>
           <td>${formatCurrency(financials.month.sales)}</td>
           <td style="color: var(--danger)">${formatCurrency(financials.month.cost)}</td>
-          <td style="color: var(--success)"><strong>${formatCurrency(financials.month.profit)}</strong></td>
-          <td><span class="status-badge" style="background: #e0e7ff; color: #3730a3;">${calcMargin(financials.month.profit, financials.month.sales)}</span></td>
+          <td style="color: ${trueProfitMonth >= 0 ? 'var(--success)' : 'var(--danger)'}"><strong>${formatCurrency(trueProfitMonth)}</strong></td>
+          <td><span class="status-badge" style="background: #e0e7ff; color: #3730a3;">${calcMargin(trueProfitMonth, financials.month.sales)}</span></td>
         </tr>
         <tr style="background-color: #f8fafc; border-top: 2px solid #e2e8f0;">
           <td><strong>All-Time</strong></td>
           <td><strong>${formatCurrency(financials.allTime.sales)}</strong></td>
           <td style="color: var(--danger)"><strong>${formatCurrency(financials.allTime.cost)}</strong></td>
-          <td style="color: var(--success)"><strong>${formatCurrency(financials.allTime.profit)}</strong></td>
-          <td><span class="status-badge" style="background: #e0e7ff; color: #3730a3;">${calcMargin(financials.allTime.profit, financials.allTime.sales)}</span></td>
+          <td style="color: ${trueProfitAllTime >= 0 ? 'var(--success)' : 'var(--danger)'}"><strong>${formatCurrency(trueProfitAllTime)}</strong></td>
+          <td><span class="status-badge" style="background: #e0e7ff; color: #3730a3;">${calcMargin(trueProfitAllTime, financials.allTime.sales)}</span></td>
         </tr>
       `;
     }
 
+    // Draw Google Charts
+    if (google.visualization && typeof google.visualization.arrayToDataTable === 'function') {
+      let catData = [['Category', 'Products']];
+      for (const [cat, count] of Object.entries(categoryCounts)) { catData.push([cat, count]); }
+      if(catData.length > 1) {
+        var dataPie = google.visualization.arrayToDataTable(catData);
+        var optionsPie = { pieHole: 0.5, colors: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'], chartArea: {width: '90%', height: '80%'}, legend: {position: 'right'}, pieSliceBorderColor: 'transparent' };
+        var chartPie = new google.visualization.PieChart(document.getElementById('chart_category'));
+        chartPie.draw(dataPie, optionsPie);
+      }
+
+      let trendData = [['Date', 'Revenue']];
+      last7Days.forEach(day => {
+         let shortDate = day.split(' ').slice(1,3).join(' '); 
+         trendData.push([shortDate, dailyTrends[day]]);
+      });
+      var dataBar = google.visualization.arrayToDataTable(trendData);
+      var optionsBar = {
+        colors: ['#4f46e5'], chartArea: {width: '85%', height: '75%'}, legend: {position: 'none'},
+        vAxis: { format: '₱#,###', gridlines: {color: '#f1f5f9'}, textStyle: {color: '#64748b'} },
+        hAxis: { textStyle: {color: '#64748b', bold: true} }, animation:{ startup: true, duration: 1000, easing: 'out' }
+      };
+      var chartBar = new google.visualization.ColumnChart(document.getElementById('chart_trends'));
+      chartBar.draw(dataBar, optionsBar);
+    }
+}
+
 // ==========================================
-// 8. HISTORY & RECENT SALES
+// 8. EXPENSE MANAGEMENT
+// ==========================================
+function openAddExpenseModal() {
+    document.getElementById('addExpenseForm').reset();
+    document.getElementById('addExpenseModal').classList.remove('hidden');
+}
+
+function closeAddExpenseModal() {
+    document.getElementById('addExpenseModal').classList.add('hidden');
+}
+
+async function handleAddExpense(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnConfirmExpense');
+    btn.innerText = "Saving...";
+    btn.disabled = true;
+    
+    const expPayload = {
+      desc: document.getElementById('expDesc').value,
+      category: document.getElementById('expCategory').value,
+      amount: parseFloat(document.getElementById('expAmount').value),
+      date: new Date().toLocaleString()
+    };
+
+    try {
+      await api('addExpenseAPI', expPayload);
+      showToast('Expense recorded successfully!');
+      closeAddExpenseModal();
+      await loadGlobalData(); // Reloads all tables and updates dashboard
+    } catch (error) {
+      showToast('Error recording expense: ' + error.message, 'error');
+    } finally {
+      btn.innerText = "Save Expense";
+      btn.disabled = false;
+    }
+}
+
+function renderExpenseTable() {
+    let todayExp = 0;
+    let monthExp = 0;
+    let todayDate = new Date();
+
+    let html = '<table class="table-compact"><thead><tr><th>ID</th><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Logged By</th><th>Action</th></tr></thead><tbody>';
+    
+    if(expenseData.length === 0) {
+      html += '<tr><td colspan="7" style="text-align:center;">No expenses recorded yet.</td></tr>';
+    }
+
+    [...expenseData].reverse().forEach(row => {
+        let d = new Date(row[1]);
+        let amt = parseFloat(row[4]) || 0;
+        
+        if(d.toDateString() === todayDate.toDateString()) todayExp += amt;
+        if(d.getMonth() === todayDate.getMonth() && d.getFullYear() === todayDate.getFullYear()) monthExp += amt;
+
+        html += `<tr>
+            <td><small style="color:var(--text-muted)">${row[0]}</small></td>
+            <td>${row[1]}</td>
+            <td><strong>${row[2]}</strong></td>
+            <td><span class="status-badge" style="background: #e2e8f0; color: #475569;">${row[3]}</span></td>
+            <td style="color: var(--danger); font-weight: bold;">₱${amt.toFixed(2)}</td>
+            <td><small>${row[5]}</small></td>
+            <td><button onclick="handleDeleteExpense('${row[0]}')" class="btn btn-sm btn-danger">Void</button></td>
+        </tr>`;
+    });
+    
+    html += '</tbody></table>';
+    
+    let tableContainer = document.getElementById('expenseTableContainer');
+    if (tableContainer) tableContainer.innerHTML = html;
+    
+    let expTodayEl = document.getElementById('expToday');
+    let expMonthEl = document.getElementById('expMonth');
+    if(expTodayEl) expTodayEl.innerText = `₱${todayExp.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    if(expMonthEl) expMonthEl.innerText = `₱${monthExp.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+}
+
+async function handleDeleteExpense(id) {
+    if(!confirm("Are you sure you want to void this expense?")) return;
+    try {
+        await api('deleteExpenseAPI', { expId: id });
+        showToast("Expense voided successfully.");
+        await loadGlobalData();
+    } catch (e) {
+        showToast(e.message, "error");
+    }
+}
+
+// ==========================================
+// 9. HISTORY & RECENT SALES
 // ==========================================
 function renderRecentSales() {
     const todayString = new Date().toDateString();
@@ -798,11 +804,7 @@ function renderRecentSales() {
         
         if (!groupedSales[txnId]) {
           groupedSales[txnId] = {
-            items: [],
-            total: 0,
-            amountPaid: 0,
-            change: 0,
-            status: row[9]
+            items: [], total: 0, amountPaid: 0, change: 0, status: row[9]
           };
         }
         
@@ -933,7 +935,7 @@ function renderHistoryTable() {
 }
 
 // ==========================================
-// 9. MODALS & NAVIGATION
+// 10. MODALS & NAVIGATION
 // ==========================================
 function openRecentSalesModal() {
     document.getElementById('recentSalesModal').classList.remove('hidden');
