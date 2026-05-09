@@ -141,35 +141,37 @@ async function handleLogin() {
 
 async function authenticate(username, pass) {
   try {
+    // 1. Temporarily store credentials so the api() wrapper can attach them to the payload
+    sessionStorage.setItem('pos_username', username); 
+    sessionStorage.setItem('pos_pass', pass); 
+
+    // 2. Ping the backend to verify credentials and check Admin Approval status
     const accessRes = await api('loginAPI', null); 
     
     if (accessRes.status === 'success') {
-      // Only commit to session storage IF the API returns success/approved
-      sessionStorage.setItem('pos_username', username); 
-      sessionStorage.setItem('pos_pass', pass); 
-
+      // 3. Status is Approved - Proceed with app initialization
       currentUserName = accessRes.name;
       await loadGlobalData();
+      
       document.getElementById('loader-initial').classList.add('hidden');
       startSilentSync();
       showToast(`Welcome, ${currentUserName}!`);
     } else {
+      // Throw an error to trigger the catch block below (e.g., "Account pending admin approval.")
       throw new Error(accessRes.message);
     }
   } catch (e) {
+    // 4. Status is Pending/Rejected or Wrong Password - Scrub the session storage immediately
     sessionStorage.removeItem('pos_username'); 
     sessionStorage.removeItem('pos_pass'); 
     
+    // Reset UI back to login screen
     document.getElementById('loader-initial').classList.add('hidden');
     document.getElementById('loader-login').classList.remove('hidden');
+    
+    // Display the rejection/pending message to the user
     showToast(e.message, 'error');
   }
-}
-
-function logout() {
-  sessionStorage.removeItem('pos_username'); 
-  sessionStorage.removeItem('pos_pass'); 
-  window.location.reload();
 }
 
 // ==========================================
