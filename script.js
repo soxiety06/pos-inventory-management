@@ -18,154 +18,57 @@ if ('serviceWorker' in navigator) {
 }
 
 // ==========================================
-// 2. FETCH API WRAPPER (HEADLESS REST API)
+// 2. NATIVE GAS API WRAPPER
 // ==========================================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwGXsZl_YAd0rDSNVli3dTw-t1t16xOrKfrezrjca2QUPapSuiuGAZnNbu2BHpc8-kx/exec"; // Be sure to paste your latest /exec URL here!
+const api = (method, ...args) => {
+  // Show loader for background processes
+  if (method !== 'checkAccessAPI' && method !== 'checkDataSyncAPI' && method !== 'getStartupDataAPI') {
+    let loader = document.getElementById('loader-initial');
+    if (loader) loader.classList.remove('hidden');
+  }
 
-const api = async (method, data = {}) => {
-    // 1. Show Loader
-    if (method !== 'loginAPI' && method !== 'registerUserAPI' && method !== 'checkDataSyncAPI' && method !== 'getStartupDataAPI') {
-        let loader = document.getElementById('loader-initial');
-        if (loader) loader.classList.remove('hidden');
-    }
-
-    // 2. Fetch Session Data (THIS FIXES THE ERROR!)
-    const storedUsername = sessionStorage.getItem('pos_username') || "";
-    const storedPass = sessionStorage.getItem('pos_pass') || "";
-
-    try {
-        // Cache buster to ensure GitHub doesn't serve old transactions
-        const cacheBusterUrl = GAS_URL + "?t=" + new Date().getTime();
-        
-        const response = await fetch(cacheBusterUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ 
-                action: method, 
-                username: storedUsername, 
-                password: storedPass, 
-                data: data 
-            }),
-            redirect: 'follow'
-        });
-
-        const textResponse = await response.text(); 
-        let result;
-        
-        try {
-            result = JSON.parse(textResponse);
-        } catch (e) {
-            console.error("Server returned HTML instead of JSON:", textResponse);
-            throw new Error("API Connection Blocked. Check GAS Deployment settings.");
-        }
-
-        // 3. Hide Loader
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler((res) => {
         let loader = document.getElementById('loader-initial');
         if (loader) loader.classList.add('hidden');
-        
-        if (result.message === 'TRIAL_EXPIRED') {
-            triggerTrialExpired();
-            throw new Error('Trial Expired');
-        }
-        
-        if (result.status === 'error') throw new Error(result.message);
-        return result;
-
-    } catch (error) {
+        resolve(res);
+      })
+      .withFailureHandler((err) => {
         let loader = document.getElementById('loader-initial');
         if (loader) loader.classList.add('hidden');
-        
-        if(error.message !== 'Trial Expired') throw error;
-    }
+        reject(err);
+      })
+      [method](...args);
+  });
 };
-// ==========================================
-// 3. AUTHENTICATION & TRIAL LOGIC
-// ==========================================
-function toggleAuthMode(mode) {
-    if (mode === 'register') {
-        document.getElementById('loader-login').classList.add('hidden');
-        document.getElementById('loader-register').classList.remove('hidden');
-    } else {
-        document.getElementById('loader-register').classList.add('hidden');
-        document.getElementById('loader-login').classList.remove('hidden');
-    }
-}
 
+// ==========================================
+// 3. AUTHENTICATION (NATIVE GMAIL)
+// ==========================================
 async function checkSession() {
-    const username = sessionStorage.getItem('pos_username');
-    const pass = sessionStorage.getItem('pos_pass');
+  try {
+    const accessRes = await api('checkAccessAPI');
     
-    if (!username || !pass) {
-        document.getElementById('loader-initial').classList.add('hidden');
-        document.getElementById('loader-login').classList.remove('hidden');
-        return;
+    if (accessRes.status === 'approved') {
+      currentUserName = accessRes.name;
+      await loadGlobalData();
+      document.getElementById('loader-initial').classList.add('hidden');
+      startSilentSync();
+      showToast(`Welcome, ${currentUserName}!`);
+    } else {
+      // If not approved, they shouldn't be here. 
+      // Ideally, link this to your registration flow if they are a 'new_user'.
+      document.getElementById('loader-initial').innerHTML = `<h3 style="color:red; text-align:center; margin-top:20vh;">Access Denied: ${accessRes.message || 'Pending Approval'}</h3>`;
     }
-    await authenticate(username, pass);
-}
-
-async function handleRegister() {
-    const name = document.getElementById('regName').value;
-    const username = document.getElementById('regUsername').value;
-    const pass = document.getElementById('regPassword').value;
-    
-    if (!name || !username || !pass) return showToast('Please fill all fields', 'error');
-
-    document.getElementById('loader-register').classList.add('hidden');
-    document.getElementById('loader-initial').classList.remove('hidden');
-    
-    try {
-        await api('registerUserAPI', { username: username, name: name, password: pass });
-        showToast('Registration successful! Logging you in...', 'success');
-        await authenticate(username, pass);
-    } catch(e) {
-        document.getElementById('loader-initial').classList.add('hidden');
-        document.getElementById('loader-register').classList.remove('hidden');
-        showToast(e.message, 'error');
-    }
-}
-
-async function handleLogin() {
-    const username = document.getElementById('loginUsername').value;
-    const pass = document.getElementById('loginPassword').value;
-    if (!username || !pass) return showToast('Please enter username and password', 'error');
-    
-    document.getElementById('loader-login').classList.add('hidden');
-    document.getElementById('loader-initial').classList.remove('hidden');
-    
-    await authenticate(username, pass);
-}
-
-async function authenticate(username, pass) {
-    try {
-        sessionStorage.setItem('pos_username', username); 
-        sessionStorage.setItem('pos_pass', pass); 
-
-        const accessRes = await api('loginAPI', null); 
-        
-        if (accessRes.status === 'success') {
-            currentUserName = accessRes.name;
-            await loadGlobalData();
-            document.getElementById('loader-initial').classList.add('hidden');
-            startSilentSync();
-            showToast(`Welcome, ${currentUserName}!`);
-        }
-    } catch (e) {
-        sessionStorage.removeItem('pos_username'); 
-        sessionStorage.removeItem('pos_pass'); 
-        
-        if(e.message !== 'Trial Expired') {
-            document.getElementById('loader-initial').classList.add('hidden');
-            document.getElementById('loader-login').classList.remove('hidden');
-            showToast(e.message, 'error');
-        }
-    }
+  } catch (e) {
+    document.getElementById('loader-initial').innerHTML = `<h3 style="color:red; text-align:center; margin-top:20vh;">Error: ${e.message}</h3>`;
+  }
 }
 
 function logout() {
-    // Wipes the session and forces the page to reload, kicking the user back to the login screen
-    sessionStorage.removeItem('pos_username'); 
-    sessionStorage.removeItem('pos_pass'); 
-    window.location.reload();
+  // To "logout" of a native GAS app, you force a refresh or direct to a logged-out Google page.
+  window.top.location.href = 'https://accounts.google.com/logout';
 }
 
 // ==========================================
