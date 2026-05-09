@@ -32,8 +32,8 @@
       <p style="color: var(--text-muted); margin-bottom: 25px;">Please log in to continue.</p>
 
       <div class="input-group" style="text-align: left;">
-        <label>Username</label>
-        <input type="text" id="loginUsername" placeholder="Enter your username" required>
+        <label>Email Address</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" required>
       </div>
       <div class="input-group" style="text-align: left; margin-bottom: 20px;">
         <label>Password</label>
@@ -42,14 +42,14 @@
 
       <button class="btn btn-primary btn-large" onclick="handleLogin()">Login</button>
       <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">
-        Testing the app? <a href="#" onclick="toggleAuthMode('register')" style="color: var(--primary); font-weight: bold; text-decoration: none;">Register here</a>
+        New staff? <a href="#" onclick="toggleAuthMode('register')" style="color: var(--primary); font-weight: bold; text-decoration: none;">Request Access</a>
       </p>
     </div>
   </div>
 
   <div id="loader-register" class="fish-loader hidden" style="background: var(--bg-color); z-index: 99999;">
     <div class="card" style="text-align: center; max-width: 400px; width: 90%; padding: 40px 30px;">
-      <h2 style="color: var(--primary); margin-top: 10px;">Create Account</h2>
+      <h2 style="color: var(--primary); margin-top: 10px;">Request Access</h2>
       <p style="color: var(--text-muted); margin-bottom: 25px;">Register to access Ayen Aquatics.</p>
 
       <div class="input-group" style="text-align: left;">
@@ -57,17 +57,17 @@
         <input type="text" id="regName" placeholder="Juan Dela Cruz" required>
       </div>
       <div class="input-group" style="text-align: left;">
-        <label>Username</label>
-        <input type="text" id="regUsername" placeholder="Choose a username" required>
+        <label>Email Address</label>
+        <input type="email" id="regEmail" placeholder="you@example.com" required>
       </div>
       <div class="input-group" style="text-align: left; margin-bottom: 20px;">
         <label>Create Password</label>
         <input type="password" id="regPassword" placeholder="••••••••" required>
       </div>
 
-      <button class="btn btn-success btn-large" onclick="handleRegister()">Register Account</button>
+      <button class="btn btn-success btn-large" onclick="handleRegister()">Submit Request</button>
       <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">
-        Already registered? <a href="#" onclick="toggleAuthMode('login')" style="color: var(--primary); font-weight: bold; text-decoration: none;">Login here</a>
+        Already approved? <a href="#" onclick="toggleAuthMode('login')" style="color: var(--primary); font-weight: bold; text-decoration: none;">Login here</a>
       </p>
     </div>
   </div>
