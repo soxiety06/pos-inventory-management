@@ -1,155 +1,168 @@
 /* Global Box-Sizing Reset */
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
-  :root {
-    --bg-color: #f1f5f9; 
-    --card-bg: #ffffff;
-    --text-main: #1e293b; 
-    --text-muted: #64748b; 
-    --primary: #4f46e5; 
-    --primary-hover: #4338ca;
-    --success: #10b981; 
-    --success-hover: #059669;
-    --warning: #f59e0b; 
-    --danger: #ef4444;  
-    --danger-hover: #dc2626;
-    --border-radius: 8px;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-  }
-  
-  body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; }
-  .pos-container { max-width: 1200px; margin: 0 auto; }
-  
-  /* Header & Tabs */
-  .header-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  h1 { margin: 0; color: var(--text-main); font-size: 1.8rem; }
-  .section-header p { color: var(--text-muted); margin-top: 0; }
-  
-  .tabs { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-  .tabs button { padding: 10px 24px; background: transparent; border: none; color: var(--text-muted); font-weight: 600; font-size: 1rem; cursor: pointer; border-radius: var(--border-radius); transition: all 0.2s ease; }
-  .tabs button:hover { background: #e2e8f0; color: var(--text-main); }
-  .tabs button.active { background: var(--primary); color: white; }
-  .tab-content { display: none; animation: fadeIn 0.3s ease; }
-  .tab-content.active { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+*, *::before, *::after {
+  box-sizing: border-box;
+}
 
-  /* Cards & Forms */
-  .card { background: var(--card-bg); padding: 24px; border-radius: var(--border-radius); box-shadow: var(--shadow-md); margin-bottom: 20px; }
-  form .form-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
-  .input-group { margin-bottom: 16px; }
-  .input-group label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
-  input { padding: 12px; border: 1px solid #cbd5e1; border-radius: var(--border-radius); flex: 1; min-width: 200px; font-size: 1rem; width: 100%; box-sizing: border-box; transition: border-color 0.2s; }
-  input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-  
-  /* Buttons */
-  .btn { padding: 10px 20px; border: none; border-radius: var(--border-radius); color: white; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
-  .btn-primary { background: var(--primary); }
-  .btn-primary:hover { background: var(--primary-hover); }
-  .btn-success { background: var(--success); }
-  .btn-success:hover { background: var(--success-hover); }
-  .btn-danger { background: var(--danger); }
-  .btn-danger:hover { background: var(--danger-hover); }
-  .btn-secondary { background: #cbd5e1; color: var(--text-main); }
-  .btn-secondary:hover { background: #94a3b8; }
-  .btn-large { width: 100%; font-size: 1.1rem; padding: 16px; }
-  .btn-sm { font-weight: bold; color: aliceblue; border-radius: 10px; border: none; padding: 6px 12px; font-size: 0.85rem;}
-  .btn-sm:hover {cursor: pointer;}
-  .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+:root {
+  --bg-color: #f1f5f9; 
+  --card-bg: #ffffff;
+  --text-main: #1e293b; 
+  --text-muted: #64748b; 
+  --primary: #4f46e5; 
+  --primary-hover: #4338ca;
+  --success: #10b981; 
+  --success-hover: #059669;
+  --warning: #f59e0b; 
+  --danger: #ef4444;  
+  --danger-hover: #dc2626;
+  --border-radius: 8px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
 
-  /* Action Buttons Grid */
-  .action-buttons { display: flex; gap: 6px; }
+body { 
+  font-family: 'Inter', 'Segoe UI', sans-serif; 
+  background-color: var(--bg-color); 
+  color: var(--text-main); 
+  margin: 0; 
+  padding: 20px; 
+}
 
-  /* Custom Dropdown Styles (POS) */
-  .custom-dropdown-container { position: relative; width: 100%; }
-  .custom-dropdown-list { position: absolute; top: 100%; left: 0; right: 0; max-height: 250px; overflow-y: auto; background: white; border: 1px solid #cbd5e1; border-radius: var(--border-radius); box-shadow: var(--shadow-md); z-index: 100; margin-top: 4px; }
-  .custom-dropdown-list.hidden { display: none; }
-  .dropdown-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-  .dropdown-item:hover { background: #f8fafc; color: var(--primary); }
-  .dropdown-item .stock-badge { font-size: 0.8rem; background: #e2e8f0; padding: 2px 8px; border-radius: 12px; }
+.pos-container { 
+  max-width: 1200px; 
+  margin: 0 auto; 
+}
 
-  /* POS Layout */
-  .pos-form { max-width: 500px; margin: 0 auto; border-top: 4px solid var(--primary); }
-  .highlight-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: var(--border-radius); margin-bottom: 16px; text-align: right; font-size: 1.2rem; }
-  .change-box { background: #ecfdf5; border: 1px solid #a7f3d0; padding: 16px; border-radius: var(--border-radius); margin-bottom: 24px; text-align: right; font-size: 1.2rem; color: var(--success-hover); }
+/* Header & Tabs */
+.header-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+h1 { margin: 0; color: var(--text-main); font-size: 1.8rem; }
+.section-header p { color: var(--text-muted); margin-top: 0; }
 
-  /* KPI Grid */
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 20px; }
-  .kpi-card { background: var(--card-bg); padding: 24px; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary); }
-  .kpi-card.alert { border-left-color: var(--danger); background: #fef2f2; }
-  .kpi-title { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-  .kpi-value { font-size: 2.2rem; font-weight: 700; color: var(--text-main); margin-top: 8px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+.tabs button { padding: 10px 24px; background: transparent; border: none; color: var(--text-muted); font-weight: 600; font-size: 1rem; cursor: pointer; border-radius: var(--border-radius); transition: all 0.2s ease; }
+.tabs button:hover { background: #e2e8f0; color: var(--text-main); }
+.tabs button.active { background: var(--primary); color: white; }
+.tab-content { display: none; animation: fadeIn 0.3s ease; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* Tables & Badges */
-  .table-container { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; text-align: left; }
-  th { background-color: #f8fafc; padding: 14px; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid #e2e8f0; }
-  td { padding: 14px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
-  tr:hover { background-color: #f8fafc; }
-  
-  .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: inline-block; }
-  .status-good { background: #d1fae5; color: #065f46; }
-  .status-warning { background: #fef3c7; color: #92400e; }
-  .status-danger { background: #fee2e2; color: #991b1b; }
+/* Cards & Forms */
+.card { background: var(--card-bg); padding: 24px; border-radius: var(--border-radius); box-shadow: var(--shadow-md); margin-bottom: 20px; }
+form .form-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.input-group { margin-bottom: 16px; }
+.input-group label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
+input { padding: 12px; border: 1px solid #cbd5e1; border-radius: var(--border-radius); flex: 1; min-width: 200px; font-size: 1rem; width: 100%; box-sizing: border-box; transition: border-color 0.2s; }
+input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
 
-  /* Modal Overlay */
-  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.2s; }
-  .modal-overlay.hidden { display: none; }
-  .modal-content { width: 100%; max-width: 500px; margin: 20px; }
-  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+/* Buttons */
+.btn { padding: 10px 20px; border: none; border-radius: var(--border-radius); color: white; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
+.btn-primary { background: var(--primary); }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-success { background: var(--success); }
+.btn-success:hover { background: var(--success-hover); }
+.btn-danger { background: var(--danger); }
+.btn-danger:hover { background: var(--danger-hover); }
+.btn-secondary { background: #cbd5e1; color: var(--text-main); }
+.btn-secondary:hover { background: #94a3b8; }
+.btn-large { width: 100%; font-size: 1.1rem; padding: 16px; }
+.btn-sm { font-weight: bold; color: aliceblue; border-radius: 10px; border: none; padding: 6px 12px; font-size: 0.85rem;}
+.btn-sm:hover {cursor: pointer;}
+.btn:disabled { background: #94a3b8; cursor: not-allowed; }
 
-  /* Toasts */
-  .toast-container { 
-    position: fixed; 
-    bottom: 20px; 
-    right: 20px; 
-    z-index: 999999; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 10px; 
-  }
-  .toast { padding: 16px 24px; border-radius: var(--border-radius); color: white; font-weight: 600; box-shadow: var(--shadow-md); animation: slideIn 0.3s ease forwards; opacity: 0; transform: translateX(100%); }
-  .toast.success { background-color: var(--success); }
-  .toast.error { background-color: var(--danger); }
-  @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+/* Action Buttons Grid */
+.action-buttons { display: flex; gap: 6px; }
 
-  /* Custom Dropdown Header for Categories */
-  .dropdown-header { 
-    padding: 8px 12px; 
-    background: #e2e8f0; 
-    font-weight: 700; 
-    font-size: 0.8rem; 
-    color: var(--text-main); 
-    text-transform: uppercase; 
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid #cbd5e1; 
-  }
+/* Custom Dropdown Styles (POS) */
+.custom-dropdown-container { position: relative; width: 100%; }
+.custom-dropdown-list { position: absolute; top: 100%; left: 0; right: 0; max-height: 250px; overflow-y: auto; background: white; border: 1px solid #cbd5e1; border-radius: var(--border-radius); box-shadow: var(--shadow-md); z-index: 100; margin-top: 4px; }
+.custom-dropdown-list.hidden { display: none; }
+.dropdown-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+.dropdown-item:hover { background: #f8fafc; color: var(--primary); }
+.dropdown-item .stock-badge { font-size: 0.8rem; background: #e2e8f0; padding: 2px 8px; border-radius: 12px; }
 
-  /* POS Split Layout */
-  .pos-layout-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    gap: 20px;
-    align-items: start;
-  }
-  @media (max-width: 800px) {
-    .pos-layout-grid { grid-template-columns: 1fr; }
-  }
+/* POS Layout */
+.pos-form { max-width: 500px; margin: 0 auto; border-top: 4px solid var(--primary); }
+.highlight-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: var(--border-radius); margin-bottom: 16px; text-align: right; font-size: 1.2rem; }
+.change-box { background: #ecfdf5; border: 1px solid #a7f3d0; padding: 16px; border-radius: var(--border-radius); margin-bottom: 24px; text-align: right; font-size: 1.2rem; color: var(--success-hover); }
 
-  /* Compact Table for Recent Sales */
-  .table-compact th, .table-compact td {
-    padding: 10px;
-    font-size: 0.9rem;
-  }
-  
-  /* Void Status Badge */
-  .status-voided {
-    background: #e2e8f0;
-    color: #64748b;
-    text-decoration: line-through;
-  }
-  /* History Hierarchy Accordions */
+/* KPI Grid */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 20px; }
+.kpi-card { background: var(--card-bg); padding: 24px; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary); }
+.kpi-card.alert { border-left-color: var(--danger); background: #fef2f2; }
+.kpi-title { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+.kpi-value { font-size: 2.2rem; font-weight: 700; color: var(--text-main); margin-top: 8px; }
+
+/* Tables & Badges */
+.table-container { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th { background-color: #f8fafc; padding: 14px; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid #e2e8f0; }
+td { padding: 14px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+tr:hover { background-color: #f8fafc; }
+
+.status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: inline-block; }
+.status-good { background: #d1fae5; color: #065f46; }
+.status-warning { background: #fef3c7; color: #92400e; }
+.status-danger { background: #fee2e2; color: #991b1b; }
+
+/* Modal Overlay */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.2s; }
+.modal-overlay.hidden { display: none; }
+.modal-content { width: 100%; max-width: 500px; margin: 20px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+/* Toasts */
+.toast-container { 
+  position: fixed; 
+  bottom: 20px; 
+  right: 20px; 
+  z-index: 999999; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 10px; 
+}
+.toast { padding: 16px 24px; border-radius: var(--border-radius); color: white; font-weight: 600; box-shadow: var(--shadow-md); animation: slideIn 0.3s ease forwards; opacity: 0; transform: translateX(100%); }
+.toast.success { background-color: var(--success); }
+.toast.error { background-color: var(--danger); }
+@keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+
+/* Custom Dropdown Header for Categories */
+.dropdown-header { 
+  padding: 8px 12px; 
+  background: #e2e8f0; 
+  font-weight: 700; 
+  font-size: 0.8rem; 
+  color: var(--text-main); 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #cbd5e1; 
+}
+
+/* POS Split Layout */
+.pos-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .pos-layout-grid { grid-template-columns: 1fr; }
+}
+
+/* Compact Table for Recent Sales */
+.table-compact th, .table-compact td {
+  padding: 10px;
+  font-size: 0.9rem;
+}
+
+/* Void Status Badge */
+.status-voided {
+  background: #e2e8f0;
+  color: #64748b;
+  text-decoration: line-through;
+}
+
+/* History Hierarchy Accordions */
 .history-year { 
   margin-bottom: 15px; 
   border: 1px solid #cbd5e1; 
@@ -202,153 +215,154 @@
 .history-day > summary:hover, .history-month > summary:hover { color: var(--primary); }
 
 /* =========================================
-     NATIVE APP SHELL ARCHITECTURE
-     ========================================= */
-  
-  /* Lock the body to exact device height, prevent overscroll bouncing */
-  body {
-    height: 100dvh; /* Dynamic Viewport Height (fixes mobile address bar jumps) */
-    overflow: hidden; /* Stops the whole page from scrolling */
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    background-color: var(--bg-color);
-  }
+   NATIVE APP SHELL ARCHITECTURE
+   ========================================= */
 
-  .pos-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    background: var(--bg-color);
-  }
+/* Lock the body to exact device height, prevent overscroll bouncing */
+body {
+  height: 100dvh; /* Dynamic Viewport Height (fixes mobile address bar jumps) */
+  overflow: hidden; /* Stops the whole page from scrolling */
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  background-color: var(--bg-color);
+}
 
-  /* Fixed Header */
-  header {
-    flex-shrink: 0;
-    padding: 15px 20px 0 20px;
-    background: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
-    z-index: 10;
-  }
+.pos-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: var(--bg-color);
+}
 
-  /* Scrollable Content Area */
-  main#app-content {
-    flex-grow: 1;
+/* Fixed Header */
+header {
+  flex-shrink: 0;
+  padding: 15px 20px 0 20px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  z-index: 10;
+}
+
+/* Scrollable Content Area */
+main#app-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 20px;
+  -webkit-overflow-scrolling: touch; /* Native momentum scrolling on iOS */
+}
+
+/* Bottom Navigation (Hidden by default on Desktop/iPad) */
+.bottom-nav {
+  display: none; 
+}
+
+/* --- TABLET & IPAD PRO (601px to 1024px) --- */
+@media screen and (min-width: 601px) and (max-width: 1024px) {
+  /* Split-pane layout for POS: Cart on right, items on left */
+  .pos-layout-grid { 
+    grid-template-columns: 1.2fr 1fr; 
+    align-items: start;
+    gap: 15px;
+  }
+  /* Lock the POS Cart to the screen height so it doesn't scroll away */
+  .pos-form {
+    position: sticky;
+    top: 0;
+    max-height: calc(100dvh - 120px);
     overflow-y: auto;
-    padding: 20px;
-    -webkit-overflow-scrolling: touch; /* Native momentum scrolling on iOS */
   }
+  main#app-content { padding: 15px; }
+}
 
-  /* Bottom Navigation (Hidden by default on Desktop/iPad) */
+/* --- MOBILE PHONES (Max Width: 600px) --- */
+@media screen and (max-width: 600px) {
+  header { padding: 10px 15px; }
+  
+  .header-title h1 { font-size: 1.3rem; }
+  
+  /* Hide top tabs entirely */
+  .tabs { display: none; }
+  
+  /* Make space at the bottom of the screen for the nav bar */
+  main#app-content { padding: 10px; padding-bottom: 90px; }
+
+  /* Enable iOS/Android Native Bottom Navigation */
   .bottom-nav {
-    display: none; 
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid #e2e8f0;
+    z-index: 1000;
+    justify-content: space-between;
+    /* Safe area inset prevents nav from overlapping iPhone home swipe bar */
+    padding-bottom: env(safe-area-inset-bottom); 
   }
 
-  /* --- TABLET & IPAD PRO (601px to 1024px) --- */
-  @media screen and (min-width: 601px) and (max-width: 1024px) {
-    /* Split-pane layout for POS: Cart on right, items on left */
-    .pos-layout-grid { 
-      grid-template-columns: 1.2fr 1fr; 
-      align-items: start;
-      gap: 15px;
-    }
-    /* Lock the POS Cart to the screen height so it doesn't scroll away */
-    .pos-form {
-      position: sticky;
-      top: 0;
-      max-height: calc(100dvh - 120px);
-      overflow-y: auto;
-    }
-    main#app-content { padding: 15px; }
+  .bottom-nav button {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: color 0.2s;
   }
 
-  /* --- MOBILE PHONES (Max Width: 600px) --- */
-  @media screen and (max-width: 600px) {
-    header { padding: 10px 15px; }
-    
-    .header-title h1 { font-size: 1.3rem; }
-    
-    /* Hide top tabs entirely */
-    .tabs { display: none; }
-    
-    /* Make space at the bottom of the screen for the nav bar */
-    main#app-content { padding: 10px; padding-bottom: 90px; }
-
-    /* Enable iOS/Android Native Bottom Navigation */
-    .bottom-nav {
-      display: flex;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-top: 1px solid #e2e8f0;
-      z-index: 1000;
-      justify-content: space-between;
-      /* Safe area inset prevents nav from overlapping iPhone home swipe bar */
-      padding-bottom: env(safe-area-inset-bottom); 
-    }
-
-    .bottom-nav button {
-      flex: 1;
-      background: none;
-      border: none;
-      padding: 12px 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: var(--text-muted);
-      font-size: 0.75rem;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
-
-    .bottom-nav button.active {
-      color: var(--primary);
-    }
-
-    .bottom-nav button .icon {
-      font-size: 1.4rem;
-      margin-bottom: 4px;
-    }
-
-    /* Force grids into single columns on mobile */
-    .pos-layout-grid { grid-template-columns: 1fr; }
-    .chart-grid { grid-template-columns: 1fr; }
-    
-    /* Make touch targets comfortable */
-    input, select, .btn { min-height: 48px; }
-    
-    /* Expand mobile modal to fill screen */
-    .modal-content {
-      width: 100%;
-      height: 100%;
-      max-height: 100dvh;
-      margin: 0;
-      border-radius: 0;
-      display: flex;
-      flex-direction: column;
-    }
+  .bottom-nav button.active {
+    color: var(--primary);
   }
 
-  /* ==========================================
+  .bottom-nav button .icon {
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+  }
+
+  /* Force grids into single columns on mobile */
+  .pos-layout-grid { grid-template-columns: 1fr; }
+  .chart-grid { grid-template-columns: 1fr; }
+  
+  /* Make touch targets comfortable */
+  input, select, .btn { min-height: 48px; }
+  
+  /* Expand mobile modal to fill screen */
+  .modal-content {
+    width: 100%;
+    height: 100%;
+    max-height: 100dvh;
+    margin: 0;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* ==========================================
    FISH LOADER ANIMATION
    ========================================== */
 .fish-loader {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(3px);
+  /* Uses a nice blurred background for overlays */
+  background: rgba(241, 245, 249, 0.85); 
+  backdrop-filter: blur(4px);
   z-index: 9999;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.3s ease, visibility 0.3s;
+  transition: opacity 0.4s ease, visibility 0.4s;
 }
 
 .fish-loader.hidden {
@@ -358,23 +372,48 @@
 }
 
 .swimming-fish {
-  font-size: 4.5rem;
+  font-size: 5.5rem;
   /* Bobbing and swimming motion */
-  animation: swimBob 1.5s infinite ease-in-out alternate;
+  animation: swimBob 1.8s infinite ease-in-out alternate;
 }
 
 .water-text {
-  margin-top: 10px;
+  margin-top: 15px;
   font-weight: 700;
   color: var(--primary);
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   letter-spacing: 1px;
-  animation: pulseWater 1.5s infinite;
+  animation: pulseWater 1.8s infinite;
+}
+
+/* Background API loader (smaller, in corner) */
+.fish-loader-small {
+  position: fixed;
+  bottom: 20px; left: 20px;
+  background: white;
+  padding: 12px;
+  border-radius: 50%;
+  box-shadow: var(--shadow-md);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+}
+
+.fish-loader-small.hidden { 
+  opacity: 0; 
+  pointer-events: none; 
+}
+
+.swimming-fish-small { 
+  font-size: 2rem; 
+  animation: swimBob 1s infinite ease-in-out alternate; 
 }
 
 @keyframes swimBob {
-  0% { transform: translateX(-15px) translateY(5px) rotate(-10deg); }
-  100% { transform: translateX(15px) translateY(-15px) rotate(10deg); }
+  0% { transform: translateX(-15px) translateY(5px) rotate(-12deg); }
+  100% { transform: translateX(15px) translateY(-10px) rotate(12deg); }
 }
 
 @keyframes pulseWater {
@@ -382,330 +421,246 @@
   50% { opacity: 1; }
 }
 
-/* ==========================================
-     FISH LOADER OVERLAYS & ANIMATIONS
-     ========================================== */
-  .fish-loader {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    /* Uses a nice blurred background for overlays */
-    background: rgba(241, 245, 249, 0.85); 
-    backdrop-filter: blur(4px);
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.4s ease, visibility 0.4s;
-  }
-
-  .fish-loader.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  .swimming-fish {
-    font-size: 5.5rem;
-    animation: swimBob 1.8s infinite ease-in-out alternate;
-  }
-
-  .water-text {
-    margin-top: 15px;
-    font-weight: 700;
-    color: var(--primary);
-    font-size: 1.3rem;
-    letter-spacing: 1px;
-    animation: pulseWater 1.8s infinite;
-  }
-
-  /* Background API loader (smaller, in corner) */
-  .fish-loader-small {
-    position: fixed;
-    bottom: 20px; left: 20px;
-    background: white;
-    padding: 12px;
-    border-radius: 50%;
-    box-shadow: var(--shadow-md);
-    z-index: 999999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.3s ease;
-  }
-  
-  .fish-loader-small.hidden { 
-    opacity: 0; 
-    pointer-events: none; 
-  }
-  
-  .swimming-fish-small { 
-    font-size: 2rem; 
-    animation: swimBob 1s infinite ease-in-out alternate; 
-  }
-
-  @keyframes swimBob {
-    0% { transform: translateX(-15px) translateY(5px) rotate(-12deg); }
-    100% { transform: translateX(15px) translateY(-10px) rotate(12deg); }
-  }
-
-  @keyframes pulseWater {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
-  }
-
-  /* Hide elements utility */
-  .hidden { display: none !important; }
+/* Hide elements utility */
+.hidden { display: none !important; }
 
 /* ==========================================
-     SCROLLABLE TABLE CONTAINERS (10 ROWS)
-     ========================================== */
-  .scrollable-table-wrapper {
-    max-height: 500px; /* Approximately 10 rows + Header */
-    overflow-y: auto;
-    border-radius: var(--border-radius);
-    border: 1px solid #e2e8f0;
-  }
-  
-  /* Make header sticky during scroll */
-  .scrollable-table-wrapper thead th {
-    position: sticky;
-    top: 0;
-    background-color: #f8fafc;
-    z-index: 10;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  }
+   SCROLLABLE TABLE CONTAINERS (10 ROWS)
+   ========================================== */
+.scrollable-table-wrapper {
+  max-height: 500px; /* Approximately 10 rows + Header */
+  overflow-y: auto;
+  border-radius: var(--border-radius);
+  border: 1px solid #e2e8f0;
+}
 
-  /* Custom Webkit Scrollbar for cleaner UI */
-  .scrollable-table-wrapper::-webkit-scrollbar {
-    width: 8px;
-  }
-  .scrollable-table-wrapper::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 4px;
-  }
-  .scrollable-table-wrapper::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-  }
-  .scrollable-table-wrapper::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-  }
+/* Make header sticky during scroll */
+.scrollable-table-wrapper thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f8fafc;
+  z-index: 10;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
 
-  /* ==========================================
-     APP LOGO STYLING
-     ========================================== */
+/* Custom Webkit Scrollbar for cleaner UI */
+.scrollable-table-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollable-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+.scrollable-table-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.scrollable-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ==========================================
+   APP LOGO STYLING
+   ========================================== */
+.app-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--primary); /* Optional: adds a nice ring around it matching your theme */
+}
+
+/* Mobile adjustment for the logo */
+@media screen and (max-width: 600px) {
   .app-logo {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-    box-shadow: var(--shadow-sm);
-    border: 2px solid var(--primary); /* Optional: adds a nice ring around it matching your theme */
+    width: 38px;
+    height: 38px;
   }
-  
-  /* Mobile adjustment for the logo */
-  @media screen and (max-width: 600px) {
-    .app-logo {
-      width: 38px;
-      height: 38px;
-    }
-  }
+}
 
-  /* ==========================================
-     ADVANCED POS TERMINAL UI
-     ========================================== */
+/* ==========================================
+   ADVANCED POS TERMINAL UI
+   ========================================== */
+.pos-advanced-container {
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  max-width: 950px;
+  margin: 0 auto 20px auto;
+  border: 1px solid #e2e8f0;
+}
+
+.pos-main-pane {
+  flex: 1.5;
+  min-width: 320px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e2e8f0;
+}
+
+.pos-checkout-pane {
+  flex: 1;
+  min-width: 300px;
+  padding: 24px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================
+   Sleek, Connected Search Bar (FLEX & OVERFLOW FIX)
+   ========================================== */
+.modern-search-bar {
+  display: flex;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: visible; 
+  transition: all 0.2s;
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 100%; /* Absolute guardrail */
+}
+.modern-search-bar:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.modern-search-bar .custom-dropdown-container {
+  flex: 1;
+  min-width: 0;
+  display: flex; /* Ensures input cannot escape */
+}
+
+.modern-search-bar input {
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0;
+  background: transparent;
+  width: 100%;
+  min-width: 0;
+}
+
+.modern-search-bar .qty-input {
+  border-left: 1px solid #e2e8f0 !important;
+  width: 60px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.modern-search-bar button {
+  border-radius: 0 6px 6px 0;
+  padding: 0 16px;
+  margin: 0; /* Removed negative margins to stop mobile width bugs */
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Receipt-style Totals Box */
+.modern-totals-box {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+}
+.modern-totals-box .tot-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+.modern-totals-box .tot-row.grand {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  border-top: 2px dashed #cbd5e1;
+  padding-top: 15px;
+  margin-top: 5px;
+}
+
+/* Payment Amount Input styling */
+.giant-amount-input {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  padding: 16px !important;
+  text-align: right;
+  color: var(--primary);
+  background: #e0e7ff;
+  border: 2px solid #c7d2fe !important;
+}
+.giant-amount-input:focus {
+  background: white;
+}
+
+/* ==========================================
+   POS TERMINAL - RESPONSIVE DESIGN FIXES
+   ========================================== */
+
+/* 1. iPad Portrait & Small Laptops (Max Width: 950px) */
+@media screen and (max-width: 950px) {
   .pos-advanced-container {
-    display: flex;
-    flex-wrap: wrap;
-    background: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    max-width: 950px;
-    margin: 0 auto 20px auto;
-    border: 1px solid #e2e8f0;
+    flex-direction: column; /* Force Cart and Checkout to stack vertically */
+    max-width: 100%;
   }
-
   .pos-main-pane {
-    flex: 1.5;
-    min-width: 320px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid #e2e8f0;
+    width: 100%;
+    min-width: 100%;
+    border-right: none;
+    border-bottom: 3px dashed #e2e8f0; /* Clear visual separation when stacked */
+    padding: 15px; /* Tighter padding to maximize mobile screen space */
   }
-
   .pos-checkout-pane {
-    flex: 1;
-    min-width: 300px;
-    padding: 24px;
-    background: #f8fafc;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* ==========================================
-     Sleek, Connected Search Bar (FLEX & OVERFLOW FIX)
-     ========================================== */
-  .modern-search-bar {
-    display: flex;
-    background: white;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    overflow: visible; 
-    transition: all 0.2s;
-    position: relative;
-    z-index: 10;
     width: 100%;
-    max-width: 100%; /* Absolute guardrail */
-  }
-  .modern-search-bar:focus-within {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-  }
-  
-  .modern-search-bar .custom-dropdown-container {
-    flex: 1;
-    min-width: 0;
-    display: flex; /* Ensures input cannot escape */
-  }
-  
-  .modern-search-bar input {
-    border: none !important;
-    box-shadow: none !important;
-    border-radius: 0;
-    background: transparent;
-    width: 100%;
-    min-width: 0;
-  }
-  
-  .modern-search-bar .qty-input {
-    border-left: 1px solid #e2e8f0 !important;
-    width: 60px;
-    flex-shrink: 0;
-    text-align: center;
-  }
-  
-  .modern-search-bar button {
-    border-radius: 0 6px 6px 0;
-    padding: 0 16px;
-    margin: 0; /* Removed negative margins to stop mobile width bugs */
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-
-  /* Receipt-style Totals Box */
-  .modern-totals-box {
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid #e2e8f0;
-    margin-bottom: 20px;
-  }
-  .modern-totals-box .tot-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    font-size: 0.95rem;
-    color: var(--text-muted);
-  }
-  .modern-totals-box .tot-row.grand {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--text-main);
-    border-top: 2px dashed #cbd5e1;
-    padding-top: 15px;
-    margin-top: 5px;
-  }
-
-  /* Payment Amount Input styling */
-  .giant-amount-input {
-    font-size: 1.5rem !important;
-    font-weight: 800 !important;
-    padding: 16px !important;
-    text-align: right;
-    color: var(--primary);
-    background: #e0e7ff;
-    border: 2px solid #c7d2fe !important;
-  }
-  .giant-amount-input:focus {
-    background: white;
-  }
-
-  /* ==========================================
-     POS TERMINAL - RESPONSIVE DESIGN FIXES
-     ========================================== */
-
-  /* 1. iPad Portrait & Small Laptops (Max Width: 950px) */
-  @media screen and (max-width: 950px) {
-    .pos-advanced-container {
-      flex-direction: column; /* Force Cart and Checkout to stack vertically */
-      max-width: 100%;
-    }
-    .pos-main-pane {
-      width: 100%;
-      min-width: 100%;
-      border-right: none;
-      border-bottom: 3px dashed #e2e8f0; /* Clear visual separation when stacked */
-    }
-    .pos-checkout-pane {
-      width: 100%;
-      min-width: 100%;
-    }
+    min-width: 100%;
+    padding: 15px; /* Tighter padding to maximize mobile screen space */
   }
 
   /* Optimize the Search Bar for narrow screens */
-    .modern-search-bar .qty-input {
-      width: 50px; /* Slimmer for mobile */
-      padding: 10px 0;
-      font-size: 0.9rem;
-    }
-    .modern-search-bar button {
-      padding: 0 12px; /* Slimmer for mobile */
-      font-size: 0.9rem;
-    }
-    
-    .pos-main-pane, .pos-checkout-pane {
-      padding: 15px; /* Tighter padding to maximize mobile screen space */
-    }
-    
-    /* Optimize the Search Bar for narrow screens */
-    .modern-search-bar .qty-input {
-      max-width: 55px; /* Shrink qty box slightly */
-      padding: 10px 4px;
-      font-size: 0.9rem;
-    }
-    .modern-search-bar button {
-      padding: 0 14px; /* Shrink button padding */
-      font-size: 0.9rem;
-    }
-
-    /* Prevent the Cart Table from breaking/squishing the screen */
-    #cartContainer > div {
-      overflow-x: auto; /* Allows horizontal scrolling if item names are too long */
-      -webkit-overflow-scrolling: touch;
-    }
-    #cartContainer table th, 
-    #cartContainer table td {
-      white-space: nowrap; /* Forces table to scroll instead of breaking layout */
-      padding: 10px !important;
-      font-size: 0.85rem;
-    }
-    
-    /* Scale down the Giant Payment Input so it doesn't overflow */
-    .giant-amount-input {
-      font-size: 1.25rem !important;
-      padding: 12px !important;
-    }
-    
-    .modern-totals-box .tot-row.grand {
-      font-size: 1.25rem;
-    }
-    
-    /* Ensure discount inputs stack cleanly if needed */
-    .pos-checkout-pane .modern-totals-box {
-      padding: 15px;
-    }
+  .modern-search-bar .qty-input {
+    max-width: 55px; /* Shrink qty box slightly */
+    padding: 10px 4px;
+    font-size: 0.9rem;
   }
+  
+  .modern-search-bar button {
+    padding: 0 14px; /* Shrink button padding */
+    font-size: 0.9rem;
+  }
+
+  /* Prevent the Cart Table from breaking/squishing the screen */
+  #cartContainer > div {
+    overflow-x: auto; /* Allows horizontal scrolling if item names are too long */
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  #cartContainer table th, 
+  #cartContainer table td {
+    white-space: nowrap; /* Forces table to scroll instead of breaking layout */
+    padding: 10px !important;
+    font-size: 0.85rem;
+  }
+  
+  /* Scale down the Giant Payment Input so it doesn't overflow */
+  .giant-amount-input {
+    font-size: 1.25rem !important;
+    padding: 12px !important;
+  }
+  
+  .modern-totals-box .tot-row.grand {
+    font-size: 1.25rem;
+  }
+  
+  /* Ensure discount inputs stack cleanly if needed */
+  .pos-checkout-pane .modern-totals-box {
+    padding: 15px;
+  }
+}
