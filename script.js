@@ -74,28 +74,89 @@ const api = async (method, data = {}) => {
 };
 
 // ==========================================
-// 3. AUTHENTICATION (NATIVE GMAIL)
+// 3. AUTHENTICATION (CUSTOM LOGIN FOR GITHUB PAGES)
 // ==========================================
-async function checkSession() {
-  try {
-    const accessRes = await api('checkAccessAPI');
-    
-    if (accessRes.status === 'approved') {
-      currentUserName = accessRes.name;
-      await loadGlobalData();
-      document.getElementById('loader-initial').classList.add('hidden');
-      startSilentSync();
-      showToast(`Welcome, ${currentUserName}!`);
+function toggleAuthMode(mode) {
+    if (mode === 'register') {
+        document.getElementById('loader-login').classList.add('hidden');
+        document.getElementById('loader-register').classList.remove('hidden');
     } else {
-      document.getElementById('loader-initial').innerHTML = `<h3 style="color:red; text-align:center; margin-top:20vh;">Access Denied: ${accessRes.message || 'Pending Approval'}</h3>`;
+        document.getElementById('loader-register').classList.add('hidden');
+        document.getElementById('loader-login').classList.remove('hidden');
     }
-  } catch (e) {
-    document.getElementById('loader-initial').innerHTML = `<h3 style="color:red; text-align:center; margin-top:20vh;">Error: ${e.message}</h3>`;
-  }
+}
+
+async function checkSession() {
+    const username = sessionStorage.getItem('pos_username');
+    const pass = sessionStorage.getItem('pos_pass');
+    
+    if (!username || !pass) {
+        document.getElementById('loader-initial').classList.add('hidden');
+        document.getElementById('loader-login').classList.remove('hidden');
+        return;
+    }
+    await authenticate(username, pass);
+}
+
+async function handleRegister() {
+    const name = document.getElementById('regName').value;
+    const username = document.getElementById('regUsername').value;
+    const pass = document.getElementById('regPassword').value;
+    
+    if (!name || !username || !pass) return showToast('Please fill all fields', 'error');
+
+    document.getElementById('loader-register').classList.add('hidden');
+    document.getElementById('loader-initial').classList.remove('hidden');
+    
+    try {
+        await api('registerUserAPI', { username: username, name: name, password: pass });
+        showToast('Registration successful! Logging you in...', 'success');
+        await authenticate(username, pass);
+    } catch(e) {
+        document.getElementById('loader-initial').classList.add('hidden');
+        document.getElementById('loader-register').classList.remove('hidden');
+        showToast(e.message, 'error');
+    }
+}
+
+async function handleLogin() {
+    const username = document.getElementById('loginUsername').value;
+    const pass = document.getElementById('loginPassword').value;
+    if (!username || !pass) return showToast('Please enter username and password', 'error');
+    
+    document.getElementById('loader-login').classList.add('hidden');
+    document.getElementById('loader-initial').classList.remove('hidden');
+    
+    await authenticate(username, pass);
+}
+
+async function authenticate(username, pass) {
+    try {
+        sessionStorage.setItem('pos_username', username); 
+        sessionStorage.setItem('pos_pass', pass); 
+
+        const accessRes = await api('loginAPI', null); 
+        
+        if (accessRes.status === 'success') {
+            currentUserName = accessRes.name;
+            await loadGlobalData();
+            document.getElementById('loader-initial').classList.add('hidden');
+            startSilentSync();
+            showToast(`Welcome, ${currentUserName}!`);
+        }
+    } catch (e) {
+        sessionStorage.removeItem('pos_username'); 
+        sessionStorage.removeItem('pos_pass'); 
+        document.getElementById('loader-initial').classList.add('hidden');
+        document.getElementById('loader-login').classList.remove('hidden');
+        showToast(e.message, 'error');
+    }
 }
 
 function logout() {
-  window.top.location.href = 'https://accounts.google.com/logout';
+    sessionStorage.removeItem('pos_username'); 
+    sessionStorage.removeItem('pos_pass'); 
+    window.location.reload();
 }
 
 // ==========================================
