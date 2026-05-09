@@ -564,7 +564,6 @@ function renderDashboard() {
     let totalStockUnits = 0; 
     let lowStockCount = 0;
     let today = new Date();
-    
     let categoryCounts = {};
     let dailyTrends = {};
 
@@ -627,6 +626,32 @@ function renderExpenseTable() {
     let todayExp = 0;
     let monthExp = 0;
     let todayDate = new Date();
+
+    if (google.visualization && typeof google.visualization.arrayToDataTable === 'function') {
+      let catData = [['Category', 'Products']];
+      for (const [cat, count] of Object.entries(categoryCounts)) { catData.push([cat, count]); }
+      if(catData.length > 1) {
+        var dataPie = google.visualization.arrayToDataTable(catData);
+        var optionsPie = { pieHole: 0.5, colors: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'], chartArea: {width: '90%', height: '80%'}, legend: {position: 'right'}, pieSliceBorderColor: 'transparent' };
+        var chartPie = new google.visualization.PieChart(document.getElementById('chart_category'));
+        chartPie.draw(dataPie, optionsPie);
+      }
+
+      let trendData = [['Date', 'Revenue']];
+      last7Days.forEach(day => {
+         let shortDate = day.split(' ').slice(1,3).join(' '); 
+         trendData.push([shortDate, dailyTrends[day]]);
+      });
+      var dataBar = google.visualization.arrayToDataTable(trendData);
+      var optionsBar = {
+        colors: ['#4f46e5'], chartArea: {width: '85%', height: '75%'}, legend: {position: 'none'},
+        vAxis: { format: '₱#,###', gridlines: {color: '#f1f5f9'}, textStyle: {color: '#64748b'} },
+        hAxis: { textStyle: {color: '#64748b', bold: true} }, animation:{ startup: true, duration: 1000, easing: 'out' }
+      };
+      var chartBar = new google.visualization.ColumnChart(document.getElementById('chart_trends'));
+      chartBar.draw(dataBar, optionsBar);
+    }
+}
 
     let html = '<table class="table-compact"><thead><tr><th>ID</th><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Logged By</th><th>Action</th></tr></thead><tbody>';
     
@@ -758,32 +783,6 @@ let trueProfitAllTime = financials.allTime.profit - financials.allTime.expenses;
         </tr>
       `;
     }
-
-    if (google.visualization && typeof google.visualization.arrayToDataTable === 'function') {
-      let catData = [['Category', 'Products']];
-      for (const [cat, count] of Object.entries(categoryCounts)) { catData.push([cat, count]); }
-      if(catData.length > 1) {
-        var dataPie = google.visualization.arrayToDataTable(catData);
-        var optionsPie = { pieHole: 0.5, colors: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'], chartArea: {width: '90%', height: '80%'}, legend: {position: 'right'}, pieSliceBorderColor: 'transparent' };
-        var chartPie = new google.visualization.PieChart(document.getElementById('chart_category'));
-        chartPie.draw(dataPie, optionsPie);
-      }
-
-      let trendData = [['Date', 'Revenue']];
-      last7Days.forEach(day => {
-         let shortDate = day.split(' ').slice(1,3).join(' '); 
-         trendData.push([shortDate, dailyTrends[day]]);
-      });
-      var dataBar = google.visualization.arrayToDataTable(trendData);
-      var optionsBar = {
-        colors: ['#4f46e5'], chartArea: {width: '85%', height: '75%'}, legend: {position: 'none'},
-        vAxis: { format: '₱#,###', gridlines: {color: '#f1f5f9'}, textStyle: {color: '#64748b'} },
-        hAxis: { textStyle: {color: '#64748b', bold: true} }, animation:{ startup: true, duration: 1000, easing: 'out' }
-      };
-      var chartBar = new google.visualization.ColumnChart(document.getElementById('chart_trends'));
-      chartBar.draw(dataBar, optionsBar);
-    }
-}
 
 // ==========================================
 // 8. HISTORY & RECENT SALES
