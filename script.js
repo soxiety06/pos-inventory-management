@@ -2,6 +2,7 @@
 // 1. APP INITIALIZATION & VARIABLES
 // ==========================================
 let currentUserName = '';
+let currentUserRole = ''; // NEW
 let inventoryData = [];
 let recentSalesData = [];
 let expenseData = []; 
@@ -182,6 +183,15 @@ async function authenticate(email, pass) {
     
     if (accessRes.status === 'success') {
       currentUserName = accessRes.name;
+      currentUserRole = accessRes.role || 'Staff'; // Default to Staff if empty
+
+      // Unhide Admin features
+      if (currentUserRole.toLowerCase() === 'admin') {
+        document.getElementById('tab-admin').style.display = 'inline-block';
+        document.getElementById('mob-admin').style.display = 'flex';
+        loadAdminData(); // Initial load of admin panels
+      }
+
       await loadGlobalData();
       
       document.getElementById('loader-initial').classList.add('hidden');
@@ -1091,5 +1101,133 @@ function switchTab(tabId) {
   
   if (tabId === 'dashboard' && typeof renderDashboard === 'function') {
     setTimeout(renderDashboard, 50); 
+  }
+}
+
+// ==========================================
+// 11. ADMIN SETTINGS & ROLE MANAGEMENT
+// ==========================================
+
+async function loadAdminData() {
+  if (currentUserRole.toLowerCase() !== 'admin') return;
+  try {
+    const res = await api('getAdminDataAPI');
+    if (res.status === 'success') {
+      renderAdminRequests(res.requests);
+      renderAdminUsers(res.users);
+    }
+  } catch (e) {
+    console.error("Failed to load admin data:", e);
+  }
+}
+
+function renderAdminRequests(requests) {
+  let html = '<table class="table-compact"><thead><tr><th>Name</th><th>Email Address</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+  
+  if (requests.length === 0) {
+    html += '<tr><td colspan="4" style="text-align:center; padding: 15px; color: var(--text-muted);">No pending requests.</td></tr>';
+  } else {
+    requests.forEach(req => {
+      html += `<tr>
+        <td><strong>${req[0]}</strong></td>
+        <td>${req[1]}</td>
+        <td><span class="status-badge status-warning">${req[2]}</span></td>
+        <td>
+          <div class="action-buttons">
+            <button onclick="approveRequest('${req[1]}', '${req[0]}')" class="btn btn-sm btn-success">Approve</button>
+            <button onclick="rejectRequest('${req[1]}')" class="btn btn-sm btn-danger">Reject</button>
+          </div>
+        </td>
+      </tr>`;
+    });
+  }
+  document.getElementById('adminRequestsContainer').innerHTML = html + '</tbody></table>';
+}
+
+function renderAdminUsers(users) {
+  let html = '<table class="table-compact"><thead><tr><th>Name</th><th>Email Address</th><th>Role</th><th>Action</th></tr></thead><tbody>';
+  
+  users.forEach(user => {
+    let roleBadge = user[2].toLowerCase() === 'admin' ? 'status-good' : 'status-warning'; // styling distinction
+    html += `<tr>
+      <td><strong>${user[0]}</strong></td>
+      <td>${user[1]}</td>
+      <td><span class="status-badge ${roleBadge}">${user[2] || 'Staff'}</span></td>
+      <td>
+        <div class="action-buttons">
+          <button onclick="changeUserRole('${user[1]}', '${user[0]}')" class="btn btn-sm btn-primary">Change Role</button>
+          <button onclick="deleteUser('${user[1]}', '${user[0]}')" class="btn btn-sm btn-danger">Delete</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('adminUsersContainer').innerHTML = html + '</tbody></table>';
+}
+
+// Admin Actions using SweetAlert2
+async function approveRequest(email, name) {
+  const { value: role } = await Swal.fire({
+    title: `Approve ${name}?`,
+    text: "Assign a system role for this new user:",
+    input: 'select',
+    inputOptions: { 'Staff': 'Staff', 'Admin': 'Admin' },
+    inputPlaceholder: 'Select a role',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981'
+  });
+
+  if (role) {
+    try {
+      await api('approveRequestAPI', { email, role });
+      showToast(`${name} approved as ${role}!`, 'success');
+      loadAdminData();
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+}
+
+async function rejectRequest(email) {
+  if (!confirm(`Are you sure you want to permanently reject and delete the request for ${email}?`)) return;
+  try {
+    await api('rejectRequestAPI', { email });
+    showToast('Request rejected and deleted.', 'success');
+    loadAdminData();
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+async function changeUserRole(email, name) {
+  const { value: role } = await Swal.fire({
+    title: `Change Role for ${name}`,
+    input: 'select',
+    inputOptions: { 'Staff': 'Staff', 'Admin': 'Admin' },
+    inputPlaceholder: 'Select new role',
+    showCancelButton: true,
+    confirmButtonColor: '#4f46e5'
+  });
+
+  if (role) {
+    try {
+      await api('updateUserRoleAPI', { email, role });
+      showToast(`${name}'s role updated to ${role}!`, 'success');
+      loadAdminData();
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+}
+
+async function deleteUser(email, name) {
+  const { isConfirmed } = await Swal.fire({
+    title: 'Are you sure?',
+    text: `You are about to permanently revoke access for ${name} (${email}).`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    confirmButtonText: 'Yes, revoke access'
+  });
+
+  if (isConfirmed) {
+    try {
+      await api('deleteUserAPI', { email });
+      showToast('User access revoked.', 'success');
+      loadAdminData();
+    } catch (e) { showToast(e.message, 'error'); }
   }
 }
