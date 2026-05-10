@@ -226,47 +226,6 @@ async function handleLogin() {
   await authenticate(email, pass);
 }
 
-async function authenticate(email, pass) {
-  try {
-    sessionStorage.setItem('pos_email', email); 
-    sessionStorage.setItem('pos_pass', pass); 
-
-    const accessRes = await api('loginAPI', null); 
-    
-    if (accessRes.status === 'success') {
-      currentUserName = accessRes.name;
-      currentUserRole = accessRes.role || 'Staff';
-
-      // Verify Admin Rights & Unhide Tabs
-      if (currentUserRole.toLowerCase() === 'admin') {
-        document.getElementById('tab-admin').style.display = 'inline-block';
-        document.getElementById('mob-admin').style.display = 'flex';
-        loadAdminData(); 
-      }
-
-      await loadGlobalData();
-      
-      document.getElementById('loader-initial').classList.add('hidden');
-      startSilentSync();
-      showToast(`Welcome, ${currentUserName}!`);
-    } else {
-      throw new Error(accessRes.message);
-    }
-  } catch (e) {
-    sessionStorage.removeItem('pos_email'); 
-    sessionStorage.removeItem('pos_pass'); 
-    
-    document.getElementById('loader-initial').classList.add('hidden');
-    document.getElementById('loader-login').classList.remove('hidden');
-    showToast(e.message, 'error');
-  }
-}
-
-function logout() {
-  sessionStorage.removeItem('pos_email'); 
-  sessionStorage.removeItem('pos_pass'); 
-  window.location.reload();
-}
 
 // ==========================================
 // 4. GLOBAL DATA & UTILITIES
