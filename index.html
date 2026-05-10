@@ -17,7 +17,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="icon" type="image/png" href="icon-192.png">
-  <link rel="stylesheet" href="style.css?v=1.1">
+  <link rel="stylesheet" href="style.css?v=1.2">
 
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -40,9 +40,13 @@
         <label>Email Address</label>
         <input type="email" id="loginEmail" placeholder="you@example.com" required>
       </div>
+      
       <div class="input-group" style="text-align: left; margin-bottom: 20px;">
         <label>Password</label>
-        <input type="password" id="loginPassword" placeholder="••••••••" required>
+        <div style="position: relative;">
+          <input type="password" id="loginPassword" placeholder="••••••••" required style="width: 100%; padding-right: 40px;">
+          <span onclick="togglePasswordVisibility()" id="togglePasswordIcon" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.2rem; color: var(--text-muted); user-select: none;">👁️</span>
+        </div>
       </div>
 
       <button class="btn btn-primary btn-large" onclick="handleLogin()">Login</button>
@@ -218,13 +222,12 @@
         </div>
       </div>
       <nav class="tabs">
-      <button onclick="switchTab('pos')" id="tab-pos" class="active">POS Terminal</button>
-      <button onclick="switchTab('dashboard')" id="tab-dashboard">Dashboard</button>
-      <button onclick="switchTab('inventory')" id="tab-inventory">Inventory</button>
-      <button onclick="switchTab('expenses')" id="tab-expenses">Expenses</button>
-      <button onclick="switchTab('history')" id="tab-history">History</button> 
-  
-      <button onclick="switchTab('admin')" id="tab-admin" style="display: none; color: var(--primary);">⚙️ Admin Settings</button>
+        <button onclick="switchTab('pos')" id="tab-pos" class="active">POS Terminal</button>
+        <button onclick="switchTab('dashboard')" id="tab-dashboard">Dashboard</button>
+        <button onclick="switchTab('inventory')" id="tab-inventory">Inventory</button>
+        <button onclick="switchTab('expenses')" id="tab-expenses">Expenses</button>
+        <button onclick="switchTab('history')" id="tab-history">History</button> 
+        <button onclick="switchTab('admin')" id="tab-admin" style="display: none; color: var(--primary);">⚙️ Admin Settings</button>
       </nav>
     </header>
 
@@ -241,13 +244,11 @@
       <button onclick="switchTab('expenses')" id="mob-expenses">
         <span class="icon">💸</span><span>Expenses</span>
       </button>
-      <nav class="bottom-nav" id="mobile-nav">
       <button onclick="switchTab('history')" id="mob-history">
-      <span class="icon">🕒</span><span>Hist</span>
+        <span class="icon">🕒</span><span>Hist</span>
       </button>
-  
       <button onclick="switchTab('admin')" id="mob-admin" style="display: none;">
-      <span class="icon">⚙️</span><span>Admin</span>
+        <span class="icon">⚙️</span><span>Admin</span>
       </button>
     </nav>
 
@@ -445,30 +446,30 @@
           <div id="historyTableContainer"></div>
         </div>
       </div>
+
+      <div id="admin" class="tab-content">
+        <div class="section-header">
+          <h2>Admin Settings & Security</h2>
+          <p>Manage system access, approve new requests, and assign user roles.</p>
+        </div>
+
+        <div class="card table-container" style="margin-bottom: 20px;">
+          <h3>Pending Access Requests</h3>
+          <div id="adminRequestsContainer" class="scrollable-table-wrapper">
+            Loading pending requests...
+          </div>
+        </div>
+
+        <div class="card table-container">
+          <h3>Authorized Users Directory</h3>
+          <div id="adminUsersContainer" class="scrollable-table-wrapper">
+            Loading user directory...
+          </div>
+        </div>
+      </div>
     </main>
   </div>
-
-  <div id="admin" class="tab-content">
-  <div class="section-header">
-    <h2>Admin Settings & Security</h2>
-    <p>Manage system access, approve new requests, and assign user roles.</p>
-  </div>
-
-  <div class="card table-container" style="margin-bottom: 20px;">
-    <h3>Pending Access Requests</h3>
-    <div id="adminRequestsContainer" class="scrollable-table-wrapper">
-      Loading pending requests...
-    </div>
-  </div>
-
-  <div class="card table-container">
-    <h3>Authorized Users Directory</h3>
-    <div id="adminUsersContainer" class="scrollable-table-wrapper">
-      Loading user directory...
-    </div>
-  </div>
-</div>
   
-  <script src="script.js?v=1.1" defer></script>
+  <script src="script.js?v=1.2" defer></script>
 </body>
 </html>
