@@ -2,7 +2,7 @@
 // 1. APP INITIALIZATION & VARIABLES
 // ==========================================
 let currentUserName = '';
-let currentUserRole = ''; // NEW
+let currentUserRole = ''; // Used to manage Admin UI visibility
 let inventoryData = [];
 let recentSalesData = [];
 let expenseData = []; 
@@ -23,8 +23,8 @@ if ('serviceWorker' in navigator) {
 // ==========================================
 // 2. FETCH API WRAPPER (HEADLESS REST API)
 // ==========================================
-// 🚨 PASTE YOUR APPS SCRIPT DEPLOYMENT URL HERE 🚨
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxxfquYir6Ggq_AWlzFIzhq_zWjRBiQDXEBug1u7iwhJVR97sDYoDAXPKSEMc-Zv1du/exec"; 
+// 🚨 PASTE YOUR NEW APPS SCRIPT DEPLOYMENT URL HERE 🚨
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwGXsZl_YAd0rDSNVli3dTw-t1t16xOrKfrezrjca2QUPapSuiuGAZnNbu2BHpc8-kx/exec"; 
 
 const api = async (method, data = {}) => {
   if (method !== 'loginAPI' && method !== 'registerUserAPI' && method !== 'checkDataSyncAPI' && method !== 'getStartupDataAPI') {
@@ -32,7 +32,6 @@ const api = async (method, data = {}) => {
     if (loader) loader.classList.remove('hidden');
   }
 
-  // Update session keys to map to emails
   const storedEmail = sessionStorage.getItem('pos_email') || "";
   const storedPass = sessionStorage.getItem('pos_pass') || "";
 
@@ -44,7 +43,7 @@ const api = async (method, data = {}) => {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ 
         action: method, 
-        email: storedEmail, // Passed as email
+        email: storedEmail, 
         password: storedPass, 
         data: data 
       }),
@@ -75,7 +74,7 @@ const api = async (method, data = {}) => {
 };
 
 // ==========================================
-// 3. AUTHENTICATION
+// 3. AUTHENTICATION & LOGIN UI
 // ==========================================
 function toggleAuthMode(mode) {
   if (mode === 'register') {
@@ -84,6 +83,19 @@ function toggleAuthMode(mode) {
   } else {
     document.getElementById('loader-register').classList.add('hidden');
     document.getElementById('loader-login').classList.remove('hidden');
+  }
+}
+
+// Show/Hide Password Toggle Logic
+function togglePasswordVisibility() {
+  const passInput = document.getElementById('loginPassword');
+  const passIcon = document.getElementById('togglePasswordIcon');
+  if (passInput.type === 'password') {
+    passInput.type = 'text';
+    passIcon.innerText = '🙈';
+  } else {
+    passInput.type = 'password';
+    passIcon.innerText = '👁️';
   }
 }
 
@@ -104,7 +116,6 @@ async function handleRegister() {
   const email = document.getElementById('regEmail').value.trim();
   const pass = document.getElementById('regPassword').value;
   
-  // 1. Basic validation with a warning pop-up
   if (!name || !email || !pass) {
     return Swal.fire({
       icon: 'warning',
@@ -114,15 +125,12 @@ async function handleRegister() {
     });
   }
 
-  // 2. Trigger loading animation
   document.getElementById('loader-register').classList.add('hidden');
   document.getElementById('loader-initial').classList.remove('hidden');
   
   try {
-    // 3. Send payload to backend
     await api('registerUserAPI', { email: email, name: name, password: pass });
     
-    // 4. Success state: Hide loader, show login, clear form
     document.getElementById('loader-initial').classList.add('hidden');
     document.getElementById('loader-login').classList.remove('hidden');
     
@@ -130,20 +138,18 @@ async function handleRegister() {
     document.getElementById('regEmail').value = '';
     document.getElementById('regPassword').value = '';
 
-    // 5. Success Pop-up
+    // Exact requested success notification
     Swal.fire({
       icon: 'success',
-      title: 'Request Submitted!',
-      text: 'Please wait for Admin approval before logging in.',
+      title: 'Successfully created account!',
+      text: 'Waiting for admin approval.',
       confirmButtonColor: '#10b981'
     });
 
   } catch(e) {
-    // 6. Error state: Revert UI
     document.getElementById('loader-initial').classList.add('hidden');
     document.getElementById('loader-register').classList.remove('hidden');
     
-    // 7. Email Duplicate Pop-up Notification
     if (e.message.includes("already exists") || e.message.includes("already pending")) {
       Swal.fire({
         icon: 'error',
@@ -152,7 +158,6 @@ async function handleRegister() {
         confirmButtonColor: '#ef4444'
       });
     } else {
-      // Catch-all for other network/server errors
       Swal.fire({
         icon: 'error',
         title: 'Registration Failed',
@@ -183,13 +188,13 @@ async function authenticate(email, pass) {
     
     if (accessRes.status === 'success') {
       currentUserName = accessRes.name;
-      currentUserRole = accessRes.role || 'Staff'; // Default to Staff if empty
+      currentUserRole = accessRes.role || 'Staff';
 
-      // Unhide Admin features
+      // Verify Admin Rights & Unhide Tabs
       if (currentUserRole.toLowerCase() === 'admin') {
         document.getElementById('tab-admin').style.display = 'inline-block';
         document.getElementById('mob-admin').style.display = 'flex';
-        loadAdminData(); // Initial load of admin panels
+        loadAdminData(); 
       }
 
       await loadGlobalData();
@@ -223,7 +228,6 @@ function startSilentSync() {
   if (syncInterval) clearInterval(syncInterval);
   syncInterval = setInterval(async () => {
     try {
-      // BUG FIX: Passed as object instead of separate params
       let res = await api('checkDataSyncAPI', {
         clientInvCount: currentInvRowCount, 
         clientSalesCount: currentSalesRowCount, 
@@ -1107,7 +1111,6 @@ function switchTab(tabId) {
 // ==========================================
 // 11. ADMIN SETTINGS & ROLE MANAGEMENT
 // ==========================================
-
 async function loadAdminData() {
   if (currentUserRole.toLowerCase() !== 'admin') return;
   try {
@@ -1148,7 +1151,7 @@ function renderAdminUsers(users) {
   let html = '<table class="table-compact"><thead><tr><th>Name</th><th>Email Address</th><th>Role</th><th>Action</th></tr></thead><tbody>';
   
   users.forEach(user => {
-    let roleBadge = user[2].toLowerCase() === 'admin' ? 'status-good' : 'status-warning'; // styling distinction
+    let roleBadge = user[2].toLowerCase() === 'admin' ? 'status-good' : 'status-warning'; 
     html += `<tr>
       <td><strong>${user[0]}</strong></td>
       <td>${user[1]}</td>
@@ -1164,7 +1167,6 @@ function renderAdminUsers(users) {
   document.getElementById('adminUsersContainer').innerHTML = html + '</tbody></table>';
 }
 
-// Admin Actions using SweetAlert2
 async function approveRequest(email, name) {
   const { value: role } = await Swal.fire({
     title: `Approve ${name}?`,
