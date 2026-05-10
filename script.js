@@ -32,8 +32,9 @@ const api = async (method, data = {}) => {
     if (loader) loader.classList.remove('hidden');
   }
 
-  const storedEmail = sessionStorage.getItem('pos_email') || "";
-  const storedPass = sessionStorage.getItem('pos_pass') || "";
+  // CHANGED: Now pulling from permanent localStorage instead of sessionStorage
+  const storedEmail = localStorage.getItem('pos_email') || "";
+  const storedPass = localStorage.getItem('pos_pass') || "";
 
   try {
     const cacheBusterUrl = GAS_URL + "?t=" + new Date().getTime();
@@ -100,8 +101,9 @@ function togglePasswordVisibility() {
 }
 
 async function checkSession() {
-  const email = sessionStorage.getItem('pos_email');
-  const pass = sessionStorage.getItem('pos_pass');
+  // CHANGED: Check permanent memory on startup
+  const email = localStorage.getItem('pos_email');
+  const pass = localStorage.getItem('pos_pass');
   
   if (!email || !pass) {
     document.getElementById('loader-initial').classList.add('hidden');
@@ -109,6 +111,51 @@ async function checkSession() {
     return;
   }
   await authenticate(email, pass);
+}
+
+async function authenticate(email, pass) {
+  try {
+    // CHANGED: Save to permanent memory
+    localStorage.setItem('pos_email', email); 
+    localStorage.setItem('pos_pass', pass); 
+
+    const accessRes = await api('loginAPI', null); 
+    
+    if (accessRes.status === 'success') {
+      currentUserName = accessRes.name;
+      currentUserRole = accessRes.role || 'Staff';
+
+      // Verify Admin Rights & Unhide Tabs
+      if (currentUserRole.toLowerCase() === 'admin') {
+        document.getElementById('tab-admin').style.display = 'inline-block';
+        document.getElementById('mob-admin').style.display = 'flex';
+        loadAdminData(); 
+      }
+
+      await loadGlobalData();
+      
+      document.getElementById('loader-initial').classList.add('hidden');
+      startSilentSync();
+      showToast(`Welcome, ${currentUserName}!`);
+    } else {
+      throw new Error(accessRes.message);
+    }
+  } catch (e) {
+    // CHANGED: Wipe permanent memory if login fails
+    localStorage.removeItem('pos_email'); 
+    localStorage.removeItem('pos_pass'); 
+    
+    document.getElementById('loader-initial').classList.add('hidden');
+    document.getElementById('loader-login').classList.remove('hidden');
+    showToast(e.message, 'error');
+  }
+}
+
+function logout() {
+  // CHANGED: Wipe permanent memory on manual logout
+  localStorage.removeItem('pos_email'); 
+  localStorage.removeItem('pos_pass'); 
+  window.location.reload();
 }
 
 async function handleRegister() {
