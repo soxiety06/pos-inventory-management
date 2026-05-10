@@ -24,7 +24,7 @@ if ('serviceWorker' in navigator) {
 // 2. FETCH API WRAPPER (HEADLESS REST API)
 // ==========================================
 // 🚨 PASTE YOUR NEW APPS SCRIPT DEPLOYMENT URL HERE 🚨
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwGXsZl_YAd0rDSNVli3dTw-t1t16xOrKfrezrjca2QUPapSuiuGAZnNbu2BHpc8-kx/exec"; 
+const GAS_URL = "https://script.google.com/macros/s/AKfycbytvPJ6mumO7kmqDI5CpPCA5QQctI6S-7EitZtwt-4WIeOnFSdFi8qh7e5oLnAxSyKl/exec"; 
 
 const api = async (method, data = {}) => {
   if (method !== 'loginAPI' && method !== 'registerUserAPI' && method !== 'checkDataSyncAPI' && method !== 'getStartupDataAPI') {
