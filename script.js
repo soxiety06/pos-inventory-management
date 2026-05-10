@@ -258,14 +258,16 @@ async function loadGlobalData() {
     const response = await api('getStartupDataAPI'); 
     
     if (response.status === 'success') {
-      inventoryData = response.inventory;
-      recentSalesData = response.sales;
+      // Safely default to empty arrays if data is null
+      inventoryData = response.inventory || [];
+      recentSalesData = response.sales || [];
       expenseData = response.expenses || []; 
       
       currentInvRowCount = inventoryData.length + 1;
       currentSalesRowCount = recentSalesData.length + 1;
       currentExpenseRowCount = expenseData.length + 1;
       
+      // Render all tabs
       renderInventoryTable();
       populateDropdowns();
       renderExpenseTable(); 
@@ -278,6 +280,13 @@ async function loadGlobalData() {
     }
   } catch (error) {
     console.error("Error loading data", error);
+    // Pop-up notification so you know exactly why the UI failed to load
+    Swal.fire({
+      icon: 'error',
+      title: 'Data Sync Failed',
+      text: error.message || 'Unable to load system data. Please check your database connection.',
+      confirmButtonColor: '#ef4444'
+    });
   }
 }
 
